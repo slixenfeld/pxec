@@ -88,6 +88,7 @@ int main(int argc, char **argv)
 		fprintf(fp, "exit\nexit\ntest\ntest");
 		printf("save file created.\n");
 		fclose(fp);
+		exit(0);
 	}
 
 	// Read From File
