@@ -105,6 +105,12 @@ int main(int argc, char **argv)
 
 	int input_type = 0;
 
+	// Clear Screen
+	for(int i = 0 ; i < 300 ; i++)
+	{
+		printf("\n");
+	}
+
 	// Infinite Input
 	while(1)
 	{
