@@ -3,13 +3,17 @@
 #include <stdlib.h>
 /*
  * pxec 
- * built-in: add, rm, ls
+ * built-in: add, rm, ls, exit, help
  * (C) slixenfeld
  * */
 
-void print_help()
+int MAX_WORDS = 2048;
+char VERSION[] = "0.1.0";
+
+void print_version()
 {
-	printf("pxec\nrun programs linked by name in pxec\n");
+	printf("%s", VERSION);
+	exit(0);
 }
 char* remove_new_line(char* string)
 {
@@ -30,17 +34,40 @@ void remove_newline(char* line)
 			line[len-1] = 0;
 }
 
+
+void save_map(char stored[][455])
+{
+	FILE *fp = NULL;
+	// Write to File
+	fp = fopen("./map.pxec", "w+");
+	char * outstr = malloc(2400 * sizeof(char));
+	strcpy(outstr, "");
+	for (int i = 0; i < MAX_WORDS ; i++)
+	{
+		if (strcmp(stored[i],"") != 0)
+		{
+			char * temp = malloc(2400 * sizeof(char));
+			strcpy(temp, stored[i]);
+			strcat(temp, "\n");
+			strcat(outstr, temp);
+			free(temp);
+		}
+	}
+	fprintf(fp,outstr);
+	fclose(fp);
+	free(outstr);
+}
+
 int main(int argc, char **argv)
 {
 	for (int i = 0; i < argc; ++i)
 	{
-		if (*argv[i] == *"-h")
+		if(*argv[i] == *"-v")
 		{
-			print_help();
+			print_version();
 		}
 	}
 
-	int MAX_WORDS = 2048;
 	FILE *fp;
 	char * line = NULL;
 	size_t len = 0;
@@ -52,7 +79,6 @@ int main(int argc, char **argv)
 		strcpy(stored[i], "");
 	}
 
-	int i = 0;
 	int entry_count = 0;
 
 	fp = fopen("./map.pxec", "r");
@@ -64,12 +90,11 @@ int main(int argc, char **argv)
 		fclose(fp);
 	}
 
+	// Read From File
 	while ((read = getline(&line, &len, fp)) != -1)
 	{
 		remove_newline(line);
-
-		strcpy(stored[i],line);
-		i++;
+		strcpy(stored[entry_count],line);
 		entry_count++;
 	}
 
@@ -79,7 +104,7 @@ int main(int argc, char **argv)
 
 	int input_type = 0;
 
-	// user input
+	// Infinite Input
 	while(1)
 	{
 		int maxbuf = 455;
@@ -88,7 +113,6 @@ int main(int argc, char **argv)
 		int len;
 		
 		remove_newline(in);
-
 
 		if (input_type == 1)
 		{
@@ -107,23 +131,8 @@ int main(int argc, char **argv)
 			entry_count+=2;
 
 			// Write to File
-			fp = fopen("./map.pxec", "w+");
-			char * outstr = malloc(2400 * sizeof(char));
-			strcpy(outstr, "");
-			for (int i = 0; i < MAX_WORDS ; i++)
-			{
-				if (strcmp(stored[i],"") != 0)
-				{
-					char * temp = malloc(2400 * sizeof(char));
-					strcpy(temp, stored[i]);
-					strcat(temp, "\n");
-					strcat(outstr, temp);
-					free(temp);
-				}
-			}
-			fprintf(fp,outstr);
-			fclose(fp);
-			free(outstr);
+			save_map(stored);
+
 			free(path);
 
 			input_type = 0;
@@ -139,25 +148,8 @@ int main(int argc, char **argv)
 					strcpy(stored[i+1], "");
 				}
 			}
-			// and write to file
 			// Write to File
-			fp = fopen("./map.pxec", "w+");
-			char * outstr = malloc(2400 * sizeof(char));
-			strcpy(outstr, "");
-			for (int i = 0; i < MAX_WORDS ; i++)
-			{
-				if (strcmp(stored[i],"") != 0)
-				{
-					char * temp = malloc(2400 * sizeof(char));
-					strcpy(temp, stored[i]);
-					strcat(temp, "\n");
-					strcat(outstr, temp);
-					free(temp);
-				}
-			}
-			fprintf(fp,outstr);
-			fclose(fp);
-			free(outstr);
+			save_map(stored);
 
 			input_type = 0;
 		}
@@ -165,10 +157,17 @@ int main(int argc, char **argv)
 		{
 			if ( strcmp(in,"ls") == 0)
 			{
+				int counter = 0;
 				for (int i = 0 ; i < MAX_WORDS ; i++)
 				{
 					if (i % 2 == 0 && strcmp(stored[i],"") != 0)
-					printf("<%d>: [%s]\n",i, stored[i]);
+					{
+						counter++;
+						if (counter < 10)
+							printf("0%d:[%s] -> %s\n", counter, stored[i], stored[i+1]);
+						else
+							printf("%d:[%s] -> %s\n", counter, stored[i], stored[i+1]);
+					}
 				}
 			}
 			else if ( strcmp(in,"exit") == 0)
@@ -177,7 +176,7 @@ int main(int argc, char **argv)
 			}
 			else if ( strcmp(in,"help") == 0)
 			{
-				printf("add[Add a new program], rm[Remove a program], ls[List programs]\n");
+				printf("add[Add a new program], rm[Remove a program], ls[List programs], help[Show this message], exit[Exit pxec]\n");
 			}
 			else if ( strcmp(in, "add") == 0)
 			{
