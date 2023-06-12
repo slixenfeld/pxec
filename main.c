@@ -9,6 +9,7 @@
 
 int MAX_WORDS = 2048;
 char VERSION[] = "0.1.0";
+char * MAPFILE;
 
 void print_version()
 {
@@ -45,8 +46,9 @@ void clear_screen()
 void save_map(char stored[][455])
 {
 	FILE *fp = NULL;
+
 	// Write to File
-	fp = fopen("./map.pxec", "w+");
+	fp = fopen(MAPFILE, "w+");
 	char * outstr = malloc(2400 * sizeof(char));
 	strcpy(outstr, "");
 	for (int i = 0; i < MAX_WORDS ; i++)
@@ -75,6 +77,11 @@ int main(int argc, char **argv)
 		}
 	}
 
+	MAPFILE = malloc(255*sizeof(char));
+	strcpy(MAPFILE, "");
+	strcat(MAPFILE, getenv("APPDATA"));
+	strcat(MAPFILE, "\\map.pxec");
+
 	FILE *fp;
 	char * line = NULL;
 	size_t len = 0;
@@ -88,13 +95,14 @@ int main(int argc, char **argv)
 
 	int entry_count = 0;
 
-	fp = fopen("./map.pxec", "r");
+	fp = fopen(MAPFILE, "r");
 	if (fp == NULL)
 	{
-		fp = fopen("./map.pxec", "w+");
+		fp = fopen(MAPFILE, "w+");
 		fprintf(fp, "exit\nexit\ntest\ntest");
 		printf("save file created.\n");
 		fclose(fp);
+		free(MAPFILE);
 		exit(0);
 	}
 
@@ -183,7 +191,7 @@ int main(int argc, char **argv)
 			}
 			else if ( strcmp(in,"exit") == 0)
 			{
-				return 0;
+				break;
 			}
 			else if ( strcmp(in,"help") == 0)
 			{
@@ -217,6 +225,7 @@ int main(int argc, char **argv)
 			}
 		}
 	free(in);
+	free(MAPFILE);
 	}
 
 	return 0;
