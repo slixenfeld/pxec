@@ -46,6 +46,7 @@ int main(int argc, char **argv)
 	size_t len = 0;
 	ssize_t read;
 	char stored[MAX_WORDS][455];
+
 	for (int i = 0; i < MAX_WORDS ; i++)
 	{
 		strcpy(stored[i], "");
