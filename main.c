@@ -3,7 +3,7 @@
 #include <stdlib.h>
 /*
  * pxec 
- * built-in: add, rm, ls, exit, help
+ * built-in: add, rm, ls, exit, help, clear
  * (C) slixenfeld
  * */
 
@@ -34,6 +34,13 @@ void remove_newline(char* line)
 			line[len-1] = 0;
 }
 
+void clear_screen()
+{
+	for(int i = 0 ; i < 300 ; i++)
+	{
+		printf("\n");
+	}
+}
 
 void save_map(char stored[][455])
 {
@@ -105,11 +112,8 @@ int main(int argc, char **argv)
 
 	int input_type = 0;
 
-	// Clear Screen
-	for(int i = 0 ; i < 300 ; i++)
-	{
-		printf("\n");
-	}
+
+	clear_screen();
 
 	// Infinite Input
 	while(1)
@@ -183,8 +187,12 @@ int main(int argc, char **argv)
 			}
 			else if ( strcmp(in,"help") == 0)
 			{
-				printf("add[Add a new program], rm[Remove a program], ls[List programs], help[Show this message], exit[Exit pxec]\n");
+				printf("add, rm, ls, clear, help, exit\n");
 			}
+			else if ( strcmp(in, "clear") == 0)
+			{
+				clear_screen();
+			}	
 			else if ( strcmp(in, "add") == 0)
 			{
 				input_type = 1;
