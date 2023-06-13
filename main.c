@@ -42,13 +42,13 @@ void clear_screen()
 	}
 }
 
-void save_to_file(char stored[][455], char* file)
+void save_to_file(char stored[][500], char* file)
 {
 	FILE *fp;
 
 	// Write to File
 	fp = fopen(file, "w+");
-	char * outstr = malloc(12000 * sizeof(char));
+	char * outstr = malloc(50000 * sizeof(char));
 	strcpy(outstr, "");
 	for (int i = 0; i < MAX_WORDS ; i++)
 	{
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	char *MAPFILE = (char*) malloc(455*sizeof(char));
+	char *MAPFILE = (char*) malloc(500*sizeof(char));
 	strcpy(MAPFILE, "");
 	strcpy(MAPFILE, getenv("APPDATA"));
 	strcat(MAPFILE, "\\map.pxec");
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 	char * line = NULL;
 	size_t len = 0;
 	ssize_t read;
-	char stored[MAX_WORDS][455];
+	char stored[MAX_WORDS][500];
 
 	for (int i = 0; i < MAX_WORDS ; i++)
 	{
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 	// Infinite Input
 	while(1)
 	{
-		int maxbuf = 455;
+		int maxbuf = 500;
 		char *in = (char *)malloc(maxbuf + sizeof(char));
 		getline(&in, &maxbuf, stdin);
 		int len;
