@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 		{
 			strcpy(stored[entry_count], in);
 			input_type = 2;
-			printf("path/exe = ");
+			printf("path/exe -> ");
 		}
 		else if (input_type == 2)
 		{
@@ -153,15 +153,22 @@ int main(int argc, char **argv)
 
 			free(path);
 
+			printf("added [%s] -> %s\n", stored[entry_count-2], stored[entry_count-1]);
 			input_type = 0;
 		}
 		else if (input_type == 3)
 		{
+
+			char * key = malloc(500*sizeof(char));
+			char * val = malloc(500*sizeof(char));
+
 			// remove entry [key, value]
 			for (int i = 0; i < MAX_WORDS ; i++)
 			{
 				if ( i % 2 == 0 && strcmp(stored[i],in) == 0)
 				{
+					strcpy(key,stored[i]);
+					strcpy(val,stored[i+1]);
 					strcpy(stored[i], "");
 					strcpy(stored[i+1], "");
 				}
@@ -169,6 +176,7 @@ int main(int argc, char **argv)
 			// Write to File
 			save_to_file(stored, MAPFILE);
 
+			printf("removed [%s]\n", key);
 			input_type = 0;
 		}
 		else if (input_type == 0) 
