@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
 /*
  * pxec 
  * built-in: add, rm, ls, exit, help, clear
@@ -153,7 +158,7 @@ int main(int argc, char **argv)
 
 			free(path);
 
-			printf("added [%s] -> %s\n", stored[entry_count-2], stored[entry_count-1]);
+			printf(ANSI_COLOR_GREEN "added %s -> %s" ANSI_COLOR_RESET "\n", stored[entry_count-2], stored[entry_count-1]);
 			input_type = 0;
 		}
 		else if (input_type == 3)
@@ -176,7 +181,7 @@ int main(int argc, char **argv)
 			// Write to File
 			save_to_file(stored, MAPFILE);
 
-			printf("removed [%s]\n", key);
+			printf(ANSI_COLOR_RED "removed %s" ANSI_COLOR_RESET "\n", key);
 			input_type = 0;
 		}
 		else if (input_type == 0) 
@@ -211,18 +216,18 @@ int main(int argc, char **argv)
 			else if ( strcmp(in, "add") == 0)
 			{
 				input_type = 1;
-				printf("adding -> ");
+				printf(ANSI_COLOR_GREEN "adding" ANSI_COLOR_RESET " -> ");
 			}
 			else if ( strcmp(in, "rm") == 0)
 			{
 				input_type = 3;
-				printf("removing -> ");
+				printf(ANSI_COLOR_RED "removing " ANSI_COLOR_RESET " -> ");
 			}
 			for (int i = 0 ; i < MAX_WORDS ; i++)
 			{
 				if ( i % 2 == 0 && strcmp(stored[i+1],"") !=0 && strcmp(in,stored[i]) == 0)
 				{
-					printf("->[%s]\n", in);
+					printf(ANSI_COLOR_GREEN "-> %s" ANSI_COLOR_RESET "\n", in);
 					char * cmd = malloc(1000 * sizeof(char));
 					strcpy(cmd,"start \"\" ");
 					strcat(cmd, stored[i+1]);
