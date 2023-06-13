@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 		{
 			strcpy(stored[entry_count], in);
 			input_type = 2;
-			printf("path: ");
+			printf("path/exe = ");
 		}
 		else if (input_type == 2)
 		{
@@ -203,12 +203,12 @@ int main(int argc, char **argv)
 			else if ( strcmp(in, "add") == 0)
 			{
 				input_type = 1;
-				printf("adding word: ");
+				printf("adding -> ");
 			}
 			else if ( strcmp(in, "rm") == 0)
 			{
 				input_type = 3;
-				printf("removing word: ");
+				printf("removing -> ");
 			}
 			for (int i = 0 ; i < MAX_WORDS ; i++)
 			{
@@ -216,7 +216,7 @@ int main(int argc, char **argv)
 				{
 					printf("[%s]\n", in);
 					char * cmd = malloc(1000 * sizeof(char));
-					strcpy(cmd,"start /min cmd /c ");
+					strcpy(cmd,"start \"\" ");
 					strcat(cmd, stored[i+1]);
 					int status = system( cmd );
 					free(cmd);
