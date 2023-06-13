@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 	if (fp == NULL)
 	{
 		fp = fopen(MAPFILE, "w+");
-		fprintf(fp, "exit\nexit\ntest\ntest");
+		fprintf(fp, "exit\nexit\n");
 		printf("save file created.\n");
 		fclose(fp);
 		exit(0);
@@ -222,7 +222,7 @@ int main(int argc, char **argv)
 			{
 				if ( i % 2 == 0 && strcmp(stored[i+1],"") !=0 && strcmp(in,stored[i]) == 0)
 				{
-					printf("[%s]\n", in);
+					printf("->[%s]\n", in);
 					char * cmd = malloc(1000 * sizeof(char));
 					strcpy(cmd,"start \"\" ");
 					strcat(cmd, stored[i+1]);
