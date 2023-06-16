@@ -9,7 +9,7 @@
 
 /*
  * pxec 
- * built-in: add, rm, ls, exit, help, clear
+ * built-in: add, rm, ls, exit, help, clear, edit
  * (C) slixenfeld
  * */
 
@@ -220,7 +220,21 @@ int main(int argc, char **argv)
 			else if ( strcmp(in, "clear") == 0)
 			{
 				clear_screen();
-			}	
+			}
+			else if (strcmp(in, "edit") == 0)
+			{
+				printf("editing save file..\n");
+				char * cmd = malloc(1000 * sizeof(char));
+
+				strcpy(cmd,"nvim ");
+				strcat(cmd, getenv("APPDATA"));
+				strcat(cmd, "\\map.pxec");
+
+				int status = system( cmd );
+
+				free(cmd);
+				return 0;
+			}
 			else if ( strcmp(in, "add") == 0)
 			{
 				input_type = 1;
