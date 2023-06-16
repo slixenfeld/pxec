@@ -6,6 +6,7 @@
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
+
 /*
  * pxec 
  * built-in: add, rm, ls, exit, help, clear
@@ -20,23 +21,15 @@ void print_version()
 	printf("%s", VERSION);
 	exit(0);
 }
-char* remove_new_line(char* string)
-{
-    size_t length = strlen(string);
-    if((length > 0) && (string[length-1] == '\n'))
-    {
-        string[length-1] ='\0';
-    }
-    return string;
-}
 
 void remove_newline(char* line)
 {
 	int len;
-		// remove newline
-		len = strlen(line);
-		if( line[len-1] == '\n' )
-			line[len-1] = 0;
+	len = strlen(line);
+	if( line[len-1] == '\n' )
+	{
+		line[len-1] = 0;
+	}
 }
 
 void clear_screen()
@@ -51,7 +44,6 @@ void save_to_file(char stored[][500], char* file)
 {
 	FILE *fp;
 
-	// Write to File
 	fp = fopen(file, "w+");
 	char * outstr = malloc(50000 * sizeof(char));
 	strcpy(outstr, "");
@@ -59,7 +51,7 @@ void save_to_file(char stored[][500], char* file)
 	{
 		if (strcmp(stored[i],"") != 0)
 		{
-			char * temp = malloc(1400 * sizeof(char));
+			char * temp = malloc(2048 * sizeof(char));
 			strcpy(temp, stored[i]);
 			strcat(temp, "\n");
 			strcat(outstr, temp);
@@ -98,7 +90,6 @@ int main(int argc, char **argv)
 		strcpy(stored[i], "");
 	}
 
-	int entry_count = 0;
 
 	fp = fopen(MAPFILE, "r");
 	if (fp == NULL)
@@ -110,20 +101,18 @@ int main(int argc, char **argv)
 		exit(0);
 	}
 
-	// Read From File
+	int entry_count = 0;
 	while ((read = getline(&line, &len, fp)) != -1)
 	{
 		remove_newline(line);
 		strcpy(stored[entry_count],line);
 		entry_count++;
 	}
-
 	fclose(fp);
 
 	if (line) free(line);
 
 	int input_type = 0;
-
 
 	clear_screen();
 
@@ -181,6 +170,9 @@ int main(int argc, char **argv)
 			// Write to File
 			save_to_file(stored, MAPFILE);
 
+			free(key);
+			free(val);
+
 			printf(ANSI_COLOR_RED "removed %s" ANSI_COLOR_RESET "\n", key);
 			input_type = 0;
 		}
@@ -236,7 +228,7 @@ int main(int argc, char **argv)
 				}
 			}
 		}
-	free(in);
+		free(in);
 	}
 
 	free(MAPFILE);
