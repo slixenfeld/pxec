@@ -65,11 +65,20 @@ void save_to_file(char stored[][500], char* file)
 
 int main(int argc, char **argv)
 {
+	int run_arg = 0;
+	char * argstr = (char*) malloc(1024*sizeof(char));
+
 	for (int i = 0; i < argc; ++i)
 	{
 		if(*argv[i] == *"-v")
 		{
 			print_version();
+			return 0;
+		}
+		else if(i == 1)
+		{
+			run_arg = 1;
+			strcpy(argstr, argv[1]);
 		}
 	}
 
@@ -89,7 +98,6 @@ int main(int argc, char **argv)
 	{
 		strcpy(stored[i], "");
 	}
-
 
 	fp = fopen(MAPFILE, "r");
 	if (fp == NULL)
@@ -114,18 +122,27 @@ int main(int argc, char **argv)
 
 	int input_type = 0;
 	int cmd_found = 1;
-
-	clear_screen();
-
+	
+	if (run_arg == 0)
+	{
+		clear_screen();
+	}
 	// Infinite Input
 	while(1)
 	{
 		int maxbuf = 500;
 		char *in = (char *)malloc(maxbuf + sizeof(char));
-		getline(&in, &maxbuf, stdin);
-		int len;
+		if (run_arg == 0)
+		{
+			getline(&in, &maxbuf, stdin);
+		}
 		
 		remove_newline(in);
+
+		if (run_arg == 1)
+		{
+			strcpy(in, argstr);
+		}
 
 		if (input_type == 1)
 		{
@@ -167,7 +184,6 @@ int main(int argc, char **argv)
 					strcpy(stored[i+1], "");
 				}
 			}
-			// Write to File
 			save_to_file(stored, MAPFILE);
 
 			free(key);
@@ -243,6 +259,11 @@ int main(int argc, char **argv)
 			}
 		}
 		free(in);
+
+		if(run_arg == 1)
+		{
+			break;
+		}
 	}
 
 	free(MAPFILE);
