@@ -66,7 +66,10 @@ void save_to_file(char stored[][500], char* file)
 int main(int argc, char **argv)
 {
 	int run_arg = 0;
+	char * cmdstr = (char*) malloc(1024*sizeof(char));
+	strcpy(cmdstr, "");
 	char * argstr = (char*) malloc(1024*sizeof(char));
+	strcpy(argstr, "");
 
 	for (int i = 0; i < argc; ++i)
 	{
@@ -78,7 +81,13 @@ int main(int argc, char **argv)
 		else if(i == 1)
 		{
 			run_arg = 1;
-			strcpy(argstr, argv[1]);
+			strcpy(cmdstr, argv[1]);
+			strcpy(argstr, "");
+		}
+		else if(i > 0)
+		{
+			strcat(argstr, " ");
+			strcat(argstr, argv[i]);
 		}
 	}
 
@@ -141,7 +150,7 @@ int main(int argc, char **argv)
 
 		if (run_arg == 1)
 		{
-			strcpy(in, argstr);
+			strcpy(in, cmdstr);
 		}
 
 		if (input_type == 1)
@@ -154,9 +163,7 @@ int main(int argc, char **argv)
 		{
 			char *path = (char *)malloc(maxbuf + sizeof(char));
 			strcpy(path, "");
-			strcat(path, "\"");
 			strcat(path, in);
-			strcat(path, "\"");
 			strcpy(stored[entry_count+1], path);
 			free(path);
 
@@ -260,6 +267,7 @@ int main(int argc, char **argv)
 
 						strcpy(cmd,"start \"\" ");
 						strcat(cmd, stored[i+1]);
+						strcat(cmd, argstr);
 
 						int status = system( cmd );
 						free(cmd);
@@ -268,6 +276,8 @@ int main(int argc, char **argv)
 
 				if (cmd_found == 0)
 				{
+					printf(ANSI_COLOR_RED "->\n" ANSI_COLOR_RESET);
+					strcat(in, argstr);
 					int status = system( in );
 				}
 			}
