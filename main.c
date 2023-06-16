@@ -14,7 +14,7 @@
  * */
 
 int MAX_WORDS = 2048;
-char VERSION[] = "0.1.0";
+char VERSION[] = "0.1.1";
 
 void print_version()
 {
@@ -113,6 +113,7 @@ int main(int argc, char **argv)
 	if (line) free(line);
 
 	int input_type = 0;
+	int cmd_found = 1;
 
 	clear_screen();
 
@@ -140,12 +141,11 @@ int main(int argc, char **argv)
 			strcat(path, in);
 			strcat(path, "\"");
 			strcpy(stored[entry_count+1], path);
+			free(path);
+
 			entry_count+=2;
 
-			// Write to File
 			save_to_file(stored, MAPFILE);
-
-			free(path);
 
 			printf(ANSI_COLOR_GREEN "added %s -> %s" ANSI_COLOR_RESET "\n", stored[entry_count-2], stored[entry_count-1]);
 			input_type = 0;
@@ -215,16 +215,30 @@ int main(int argc, char **argv)
 				input_type = 3;
 				printf(ANSI_COLOR_RED "removing " ANSI_COLOR_RESET " -> ");
 			}
-			for (int i = 0 ; i < MAX_WORDS ; i++)
+			else
 			{
-				if ( i % 2 == 0 && strcmp(stored[i+1],"") !=0 && strcmp(in,stored[i]) == 0)
+				cmd_found = 0;
+				for (int i = 0 ; i < MAX_WORDS ; i++)
 				{
-					printf(ANSI_COLOR_GREEN "-> %s" ANSI_COLOR_RESET "\n", in);
-					char * cmd = malloc(1000 * sizeof(char));
-					strcpy(cmd,"start \"\" ");
-					strcat(cmd, stored[i+1]);
-					int status = system( cmd );
-					free(cmd);
+					if ( i % 2 == 0 && strcmp(stored[i+1],"") !=0 && strcmp(in,stored[i]) == 0)
+					{
+						cmd_found = 1;
+
+						printf(ANSI_COLOR_GREEN "-> %s" ANSI_COLOR_RESET "\n", in);
+
+						char * cmd = malloc(1000 * sizeof(char));
+
+						strcpy(cmd,"start \"\" ");
+						strcat(cmd, stored[i+1]);
+
+						int status = system( cmd );
+						free(cmd);
+					}
+				}
+
+				if (cmd_found == 0)
+				{
+					int status = system( in );
 				}
 			}
 		}
