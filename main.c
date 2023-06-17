@@ -7,11 +7,27 @@
 #define ANSI_COLOR_RESET   "\x1b[0m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 
-/*
- * pxec 
+/* pxec
+ * (C) 2023, Simon Lixenfeld
+ *
+ * commands:
  * built-in: add, rm, ls, exit, help, clear, edit
- * (C) slixenfeld
- * */
+ *
+ * License: GPLv3(+), see LICENSE for details
+ *
+ * pxec is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * pxec is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 int MAX_WORDS = 2048;
 char VERSION[] = "0.1.1";
