@@ -81,6 +81,7 @@ void save_to_file(char stored[][500], char* file)
 
 int main(int argc, char **argv)
 {
+	int input_type = 0;
 	int run_arg = 0;
 	char * cmdstr = malloc(1024*sizeof(char));
 	strcpy(cmdstr, "");
@@ -99,6 +100,12 @@ int main(int argc, char **argv)
 			run_arg = 1;
 			strcpy(cmdstr, argv[1]);
 			strcpy(argstr, "");
+
+			if (strcmp(argv[1], "goto") == 0)
+			{
+				input_type = 4;
+				strcpy(cmdstr, argv[2]);
+			}
 		}
 		else if(i > 0)
 		{
@@ -106,6 +113,8 @@ int main(int argc, char **argv)
 			strcat(argstr, argv[i]);
 		}
 	}
+
+
 
 	char *MAPFILE = malloc(500*sizeof(char));
 	strcpy(MAPFILE, "");
@@ -145,7 +154,6 @@ int main(int argc, char **argv)
 
 	if (line) free(line);
 
-	int input_type = 0;
 	int cmd_found = 1;
 	
 	if (run_arg == 0)
