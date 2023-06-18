@@ -82,9 +82,9 @@ void save_to_file(char stored[][500], char* file)
 int main(int argc, char **argv)
 {
 	int run_arg = 0;
-	char * cmdstr = (char*) malloc(1024*sizeof(char));
+	char * cmdstr = malloc(1024*sizeof(char));
 	strcpy(cmdstr, "");
-	char * argstr = (char*) malloc(1024*sizeof(char));
+	char * argstr = malloc(1024*sizeof(char));
 	strcpy(argstr, "");
 
 	for (int i = 0; i < argc; ++i)
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	char *MAPFILE = (char*) malloc(500*sizeof(char));
+	char *MAPFILE = malloc(500*sizeof(char));
 	strcpy(MAPFILE, "");
 	strcpy(MAPFILE, getenv("APPDATA"));
 	strcat(MAPFILE, "\\map.pxec");
@@ -156,7 +156,7 @@ int main(int argc, char **argv)
 	while(1)
 	{
 		int maxbuf = 500;
-		char *in = (char *)malloc(maxbuf + sizeof(char));
+		char *in = malloc(maxbuf + sizeof(char));
 		if (run_arg == 0)
 		{
 			getline(&in, &maxbuf, stdin);
@@ -177,7 +177,7 @@ int main(int argc, char **argv)
 		}
 		else if (input_type == 2)
 		{
-			char *path = (char *)malloc(maxbuf + sizeof(char));
+			char *path = malloc(maxbuf + sizeof(char));
 			strcpy(path, "");
 			strcat(path, in);
 			strcpy(stored[entry_count+1], path);
@@ -196,6 +196,7 @@ int main(int argc, char **argv)
 			char * key = malloc(500*sizeof(char));
 			char * val = malloc(500*sizeof(char));
 
+			int found = 0;
 			// remove entry [key, value]
 			for (int i = 0; i < MAX_WORDS ; i++)
 			{
@@ -205,14 +206,15 @@ int main(int argc, char **argv)
 					strcpy(val,stored[i+1]);
 					strcpy(stored[i], "");
 					strcpy(stored[i+1], "");
+					found = 1;
 				}
 			}
 			save_to_file(stored, MAPFILE);
+			printf((found == 1) ?  ANSI_COLOR_RED "removed %s\n" ANSI_COLOR_RESET: ANSI_COLOR_RED "could not find %s\n"  ANSI_COLOR_RESET , in);
 
 			free(key);
 			free(val);
 
-			printf(ANSI_COLOR_RED "removed %s" ANSI_COLOR_RESET "\n", key);
 			input_type = 0;
 		}
 		else if (input_type == 0) 
@@ -225,10 +227,7 @@ int main(int argc, char **argv)
 					if (i % 2 == 0 && strcmp(stored[i],"") != 0)
 					{
 						counter++;
-						if (counter < 10)
-							printf("0%d:[%s] -> %s\n", counter, stored[i], stored[i+1]);
-						else
-							printf("%d:[%s] -> %s\n", counter, stored[i], stored[i+1]);
+						printf((counter < 10) ? "0%d: %s\n" : "%d: %s\n", counter, stored[i]);
 					}
 				}
 			}
