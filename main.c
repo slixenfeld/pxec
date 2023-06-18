@@ -11,7 +11,7 @@
  * (C) 2023, Simon Lixenfeld
  *
  * commands:
- * built-in: add, rm, ls, exit, help, clear, edit
+ * built-in: add, rm, ls, exit, help, clear, edit, goto
  *
  * License: GPLv3(+), see LICENSE for details
  *
@@ -192,7 +192,6 @@ int main(int argc, char **argv)
 		}
 		else if (input_type == 3)
 		{
-
 			char * key = malloc(500*sizeof(char));
 			char * val = malloc(500*sizeof(char));
 
@@ -217,6 +216,34 @@ int main(int argc, char **argv)
 
 			input_type = 0;
 		}
+		else if (input_type == 4)
+		{
+			cmd_found = 0;
+			for (int i = 0 ; i < MAX_WORDS ; i++)
+			{
+				if ( i % 2 == 0 && strcmp(stored[i+1],"") !=0 && strcmp(in,stored[i]) == 0)
+				{
+					cmd_found = 1;
+
+					printf(ANSI_COLOR_CYAN "-> %s" ANSI_COLOR_RESET "\n", in);
+
+					char * cmd = malloc(1000 * sizeof(char));
+						
+					strcpy(cmd, "cmd /K \"cd ");
+					strcat(cmd, stored[i+1]);
+					strcat(cmd, "\"");
+
+					int status = system( cmd );
+					free(cmd);
+				}
+			}
+
+			if (cmd_found == 0)
+			{
+				printf(ANSI_COLOR_RED "link not found\n" ANSI_COLOR_RESET);
+			}
+			input_type = 0;
+		}
 		else if (input_type == 0) 
 		{
 			if ( strcmp(in,"ls") == 0)
@@ -227,7 +254,17 @@ int main(int argc, char **argv)
 					if (i % 2 == 0 && strcmp(stored[i],"") != 0)
 					{
 						counter++;
+						if (strstr(stored[i+1], ".exe") == NULL)
+						{
+							printf(ANSI_COLOR_CYAN);
+						}
+						else
+						{
+							printf(ANSI_COLOR_GREEN);
+						}
 						printf((counter < 10) ? "0%d: %s\n" : "%d: %s\n", counter, stored[i]);
+
+						printf(ANSI_COLOR_RESET);
 					}
 				}
 			}
@@ -246,7 +283,7 @@ int main(int argc, char **argv)
 			else if (strcmp(in, "edit") == 0)
 			{
 				printf("editing save file..\n");
-				char * cmd = malloc(1000 * sizeof(char));
+				char * cmd = malloc(1024 * sizeof(char));
 
 				strcpy(cmd,"nvim ");
 				strcat(cmd, getenv("APPDATA"));
@@ -261,6 +298,11 @@ int main(int argc, char **argv)
 			{
 				input_type = 1;
 				printf(ANSI_COLOR_GREEN "adding" ANSI_COLOR_RESET " -> ");
+			}
+			else if ( strcmp(in, "goto") == 0 )
+			{
+				printf("-> ");
+				input_type = 4;
 			}
 			else if ( strcmp(in, "rm") == 0)
 			{
@@ -280,8 +322,7 @@ int main(int argc, char **argv)
 
 						char * cmd = malloc(1000 * sizeof(char));
 
-						strcpy(cmd,"start \"\" ");
-						strcat(cmd, stored[i+1]);
+						strcpy(cmd, stored[i+1]);
 						strcat(cmd, argstr);
 
 						int status = system( cmd );
