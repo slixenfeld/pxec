@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_CYAN    "\x1b[36m"
@@ -11,7 +13,7 @@
  * (C) 2023, Simon Lixenfeld
  *
  * commands:
- * built-in: add, rm, ls, exit, help, clear, edit, goto
+ * built-in: add, rm, ls, exit, help, clear, edit
  *
  * License: GPLv3(+), see LICENSE for details
  *
@@ -56,7 +58,7 @@ void clear_screen()
 	}
 }
 
-void save_to_file(char stored[][500], char* file)
+void save_to_file(char stored[][1000], char* file)
 {
 	FILE *fp;
 
@@ -83,6 +85,7 @@ int main(int argc, char **argv)
 {
 	int input_type = 0;
 	int run_arg = 0;
+
 	char * cmdstr = malloc(1024*sizeof(char));
 	strcpy(cmdstr, "");
 	char * argstr = malloc(1024*sizeof(char));
@@ -101,11 +104,6 @@ int main(int argc, char **argv)
 			strcpy(cmdstr, argv[1]);
 			strcpy(argstr, "");
 
-			if (strcmp(argv[1], "goto") == 0)
-			{
-				input_type = 4;
-				strcpy(cmdstr, argv[2]);
-			}
 		}
 		else if(i > 0)
 		{
@@ -114,9 +112,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-
-
-	char *MAPFILE = malloc(500*sizeof(char));
+	char *MAPFILE = malloc(1024*sizeof(char));
 	strcpy(MAPFILE, "");
 	strcpy(MAPFILE, getenv("APPDATA"));
 	strcat(MAPFILE, "\\map.pxec");
@@ -126,7 +122,7 @@ int main(int argc, char **argv)
 	char * line = NULL;
 	size_t len = 0;
 	ssize_t read;
-	char stored[MAX_WORDS][500];
+	char stored[MAX_WORDS][1000];
 
 	for (int i = 0; i < MAX_WORDS ; i++)
 	{
@@ -163,8 +159,8 @@ int main(int argc, char **argv)
 	// Infinite Input
 	while(1)
 	{
-		int maxbuf = 500;
-		char *in = malloc(maxbuf + sizeof(char));
+		int maxbuf = 1000;
+		char *in = malloc(maxbuf * sizeof(char));
 		if (run_arg == 0)
 		{
 			getline(&in, &maxbuf, stdin);
@@ -185,7 +181,7 @@ int main(int argc, char **argv)
 		}
 		else if (input_type == 2)
 		{
-			char *path = malloc(maxbuf + sizeof(char));
+			char *path = malloc(maxbuf * sizeof(char));
 			strcpy(path, "");
 			strcat(path, in);
 			strcpy(stored[entry_count+1], path);
@@ -200,8 +196,8 @@ int main(int argc, char **argv)
 		}
 		else if (input_type == 3)
 		{
-			char * key = malloc(500*sizeof(char));
-			char * val = malloc(500*sizeof(char));
+			char * key = malloc(1000*sizeof(char));
+			char * val = malloc(1000*sizeof(char));
 
 			int found = 0;
 			// remove entry [key, value]
@@ -224,34 +220,6 @@ int main(int argc, char **argv)
 
 			input_type = 0;
 		}
-		else if (input_type == 4)
-		{
-			cmd_found = 0;
-			for (int i = 0 ; i < MAX_WORDS ; i++)
-			{
-				if ( i % 2 == 0 && strcmp(stored[i+1],"") !=0 && strcmp(in,stored[i]) == 0)
-				{
-					cmd_found = 1;
-
-					printf(ANSI_COLOR_CYAN "-> %s" ANSI_COLOR_RESET "\n", in);
-
-					char * cmd = malloc(1000 * sizeof(char));
-						
-					strcpy(cmd, "cmd /K \"cd ");
-					strcat(cmd, stored[i+1]);
-					strcat(cmd, "\"");
-
-					int status = system( cmd );
-					free(cmd);
-				}
-			}
-
-			if (cmd_found == 0)
-			{
-				printf(ANSI_COLOR_RED "link not found\n" ANSI_COLOR_RESET);
-			}
-			input_type = 0;
-		}
 		else if (input_type == 0) 
 		{
 			if ( strcmp(in,"ls") == 0)
@@ -270,7 +238,11 @@ int main(int argc, char **argv)
 						{
 							printf(ANSI_COLOR_GREEN);
 						}
-						printf((counter < 10) ? "0%d: %s\n" : "%d: %s\n", counter, stored[i]);
+						if (counter % 5 == 0)
+						{
+							printf("\n");
+						}
+						printf((counter < 10) ? "0%d: %s  " : "%d: %s  ", counter, stored[i]);
 
 						printf(ANSI_COLOR_RESET);
 					}
@@ -306,11 +278,6 @@ int main(int argc, char **argv)
 			{
 				input_type = 1;
 				printf(ANSI_COLOR_GREEN "adding" ANSI_COLOR_RESET " -> ");
-			}
-			else if ( strcmp(in, "goto") == 0 )
-			{
-				printf("-> ");
-				input_type = 4;
 			}
 			else if ( strcmp(in, "rm") == 0)
 			{
