@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
@@ -33,7 +32,7 @@
 
 int MAX_WORDS = 2048;
 char VERSION[] = "0.1.1";
-
+///////////////////////////////////////////////////////////////////////////////////////////////////
 void print_version()
 {
 	printf("%s", VERSION);
@@ -80,7 +79,7 @@ void save_to_file(char stored[][1000], char* file)
 	fclose(fp);
 	free(outstr);
 }
-
+///////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
 	int input_type = 0;
@@ -114,9 +113,14 @@ int main(int argc, char **argv)
 
 	char *MAPFILE = malloc(1024*sizeof(char));
 	strcpy(MAPFILE, "");
+	#ifdef _WIN32
+	// WINDOWS
 	strcpy(MAPFILE, getenv("APPDATA"));
 	strcat(MAPFILE, "\\map.pxec");
-
+	#else
+	// LINUX
+	strcat(MAPFILE, "map.pxec");
+	#endif
 
 	FILE *fp;
 	char * line = NULL;
@@ -191,7 +195,8 @@ int main(int argc, char **argv)
 
 			save_to_file(stored, MAPFILE);
 
-			printf(ANSI_COLOR_GREEN "added %s -> %s" ANSI_COLOR_RESET "\n", stored[entry_count-2], stored[entry_count-1]);
+			printf(ANSI_COLOR_GREEN "added %s -> %s" ANSI_COLOR_RESET "\n",
+				stored[entry_count-2], stored[entry_count-1]);
 			input_type = 0;
 		}
 		else if (input_type == 3)
@@ -213,7 +218,9 @@ int main(int argc, char **argv)
 				}
 			}
 			save_to_file(stored, MAPFILE);
-			printf((found == 1) ?  ANSI_COLOR_RED "removed %s\n" ANSI_COLOR_RESET: ANSI_COLOR_RED "could not find %s\n"  ANSI_COLOR_RESET , in);
+			printf((found == 1) 
+				?  ANSI_COLOR_RED "removed %s\n" ANSI_COLOR_RESET 
+				: ANSI_COLOR_RED "could not find %s\n"  ANSI_COLOR_RESET , in);
 
 			free(key);
 			free(val);
@@ -242,7 +249,9 @@ int main(int argc, char **argv)
 						{
 							printf("\n");
 						}
-						printf((counter < 10) ? "0%d: %s  " : "%d: %s  ", counter, stored[i]);
+						printf((counter < 10) 
+							? "0%d: %s  " 
+							: "%d: %s  ", counter, stored[i]);
 
 						printf(ANSI_COLOR_RESET);
 					}
@@ -266,8 +275,14 @@ int main(int argc, char **argv)
 				char * cmd = malloc(1024 * sizeof(char));
 
 				strcpy(cmd,"nvim ");
+				#ifdef _WIN32
+				// WINDOWS
 				strcat(cmd, getenv("APPDATA"));
 				strcat(cmd, "\\map.pxec");
+				#else
+				// LINUX
+				strcat(cmd, "map.pxec");
+				#endif
 
 				int status = system( cmd );
 
