@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include "pxec.h"
 
-#define ANSI_COLOR_RED     "\x1b[31m"
+#define C_RED              "\x1b[31m"
 #define ANSI_COLOR_CYAN    "\x1b[36m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
-#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define C_RESET            "\x1b[0m"
+#define C_GREEN            "\x1b[32m"
 
 /* pxec
  * (C) 2023, Simon Lixenfeld
@@ -33,7 +33,7 @@
 
 int MAX_WORDS = 2048;
 char VERSION[] = "0.1.1";
-///////////////////////////////////////////////////////////////////////////////////////////////////
+
 void print_version()
 {
 	printf("%s", VERSION);
@@ -91,8 +91,8 @@ void run_cmd(char* in, char stored[][1000], char* argstr)
 		{
 			cmd_found = 1;
 
-			printf(ANSI_COLOR_GREEN "-> %s"
-					ANSI_COLOR_RESET "\n", in);
+			printf(C_GREEN "-> %s"
+					C_RESET "\n", in);
 
 			char * cmd = malloc(1000 * sizeof(char));
 
@@ -106,8 +106,8 @@ void run_cmd(char* in, char stored[][1000], char* argstr)
 	}
 	if (cmd_found == 0) {
 		beep(200,20);
-		printf(ANSI_COLOR_RED "could not find \'%s\' \n"
-				ANSI_COLOR_RESET, in);
+		printf(C_RED "could not find \'%s\' \n"
+				C_RESET, in);
 	}
 
 }
@@ -126,7 +126,7 @@ void list(char stored[][1000])
 			}
 			else
 			{
-				printf(ANSI_COLOR_GREEN);
+				printf(C_GREEN);
 			}
 			if (counter % 5 == 0)
 			{
@@ -136,7 +136,7 @@ void list(char stored[][1000])
 					? "0%d: %s  " 
 					: "%d: %s  ", counter, stored[i]);
 
-			printf(ANSI_COLOR_RESET);
+			printf(C_RESET);
 		}
 	}
 }
@@ -193,6 +193,7 @@ int main(int argc, char **argv)
 		if(*argv[i] == *"-v")
 		{
 			print_version();
+			free(MAPFILE);
 			return 0;
 		}
 		else if(i == 1)
@@ -209,7 +210,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	//////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
 
 
 #ifdef _WIN32
@@ -234,7 +235,10 @@ int main(int argc, char **argv)
 
 		fp = fopen(MAPFILE, "r");
 		if (fp == NULL)
-			return 1;
+		{
+			free(MAPFILE);
+			return 0;
+		}
 	}
 
 	int entry_count = 0;
@@ -248,7 +252,7 @@ int main(int argc, char **argv)
 
 	if (line) free(line);
 
-	//////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
 	while(1)
 	{
 		int maxbuf = 1000;
@@ -256,18 +260,17 @@ int main(int argc, char **argv)
 		if (run_arg == 0)
 		{
 			getline(&in, &maxbuf, stdin);
+			remove_newline(in);
 		}
-
-		remove_newline(in);
-
-		if (run_arg == 1)
+		else
 		{
 			strcpy(in, cmdstr);
 		}
+
 		if (strcmp(in, "add") == 0)
 		{
 			// Read Entry Name
-			printf(ANSI_COLOR_GREEN "adding" ANSI_COLOR_RESET " -> ");
+			printf(C_GREEN "adding" C_RESET " -> ");
 			getline(&in, &maxbuf, stdin);
 			remove_newline(in);
 
@@ -288,13 +291,14 @@ int main(int argc, char **argv)
 			entry_count+=2;
 			save_to_file(stored, MAPFILE);
 
-			printf(ANSI_COLOR_GREEN "added %s -> %s"
-					ANSI_COLOR_RESET "\n",
-					stored[entry_count-2], stored[entry_count-1]);
+			printf(C_GREEN "added %s -> %s"
+					C_RESET "\n",
+					stored[entry_count-2],
+					stored[entry_count-1]);
 		}
 		else if (strcmp(in, "rm") == 0)
 		{
-			printf(ANSI_COLOR_RED "removing " ANSI_COLOR_RESET " -> ");
+			printf(C_RED "removing " C_RESET " -> ");
 
 			getline(&in, &maxbuf, stdin);
 			remove_newline(in);
@@ -316,10 +320,9 @@ int main(int argc, char **argv)
 				}
 			}
 			save_to_file(stored, MAPFILE);
-			printf((found == 1) 
-					?  ANSI_COLOR_RED "removed %s\n" ANSI_COLOR_RESET 
-					: ANSI_COLOR_RED "could not find %s\n"
-					ANSI_COLOR_RESET , in);
+			printf((found == 1) ?  C_RED "removed %s\n"C_RESET 
+					: C_RED "could not find %s\n"
+					C_RESET , in);
 
 			free(key);
 			free(val);
@@ -344,7 +347,7 @@ int main(int argc, char **argv)
 		else if (strcmp(in, "edit") == 0)
 		{
 			edit(MAPFILE);
-			return 0;
+			break;
 		}
 		else
 		{
@@ -356,7 +359,10 @@ int main(int argc, char **argv)
 		if(run_arg == 1)
 			break;
 	}
-
+	///////////////////////////////////////////////////////////////////////
 	free(MAPFILE);
+	free(cmdstr);
+	free(argstr);
+
 	return 0;
 }
