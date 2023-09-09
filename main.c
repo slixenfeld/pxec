@@ -79,15 +79,97 @@ void save_to_file(char stored[][1000], char* file)
 	fclose(fp);
 	free(outstr);
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////
+
+void run_cmd(char* in, char stored[][1000], char* argstr)
+{
+	int cmd_found = 0;
+	for (int i = 0 ; i < MAX_WORDS ; i++)
+	{
+		if ( i % 2 == 0 && strcmp(stored[i+1],"") !=0 
+				&& strcmp(in,stored[i]) == 0)
+		{
+			cmd_found = 1;
+
+			printf(ANSI_COLOR_GREEN "-> %s"
+					ANSI_COLOR_RESET "\n", in);
+
+			char * cmd = malloc(1000 * sizeof(char));
+
+			strcpy(cmd, stored[i+1]);
+			strcat(cmd, argstr);
+
+			int status = system( cmd );
+			free(cmd);
+		}
+	}
+	if (cmd_found == 0) {
+		printf(ANSI_COLOR_RED "could not find \'%s\' \n"
+				ANSI_COLOR_RESET, in);
+	}
+
+}
+
+void list(char stored[][1000])
+{
+	int counter = 0;
+	for (int i = 0 ; i < MAX_WORDS ; i++)
+	{
+		if (i % 2 == 0 && strcmp(stored[i],"") != 0)
+		{
+			counter++;
+			if (strstr(stored[i+1], ".exe") == NULL)
+			{
+				printf(ANSI_COLOR_CYAN);
+			}
+			else
+			{
+				printf(ANSI_COLOR_GREEN);
+			}
+			if (counter % 5 == 0)
+			{
+				printf("\n");
+			}
+			printf((counter < 10) 
+					? "0%d: %s  " 
+					: "%d: %s  ", counter, stored[i]);
+
+			printf(ANSI_COLOR_RESET);
+		}
+	}
+
+}
+
+void edit(char* MAPFILE)
+{
+	printf("editing save file..\n");
+	char * cmd = malloc(1024 * sizeof(char));
+
+	strcpy(cmd,"vim ");
+	strcat(cmd, MAPFILE);
+
+	int status = system( cmd );
+
+	free(cmd);
+}
+
+//////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
 	int run_arg = 0;
-
 	char * cmdstr = malloc(1024*sizeof(char));
 	strcpy(cmdstr, "");
 	char * argstr = malloc(1024*sizeof(char));
 	strcpy(argstr, "");
+	
+	char *MAPFILE = malloc(1024*sizeof(char));
+	strcpy(MAPFILE, "");
+	FILE *fp;
+
+	char * line = NULL;
+	size_t len = 0;
+	ssize_t read;
+	char stored[MAX_WORDS][1000];
+
 
 	for (int i = 0; i < argc; ++i)
 	{
@@ -110,29 +192,20 @@ int main(int argc, char **argv)
 		}
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-	char *MAPFILE = malloc(1024*sizeof(char));
-	strcpy(MAPFILE, "");
+	//////////////////////////////////////////////////////////////////////////////////
+
+
 #ifdef _WIN32
 	// WINDOWS
 	strcpy(MAPFILE, getenv("APPDATA"));
 	strcat(MAPFILE, "\\map.pxec");
 #else
 	// LINUX
-	strcat(MAPFILE, "map.pxec");
+	strcat(MAPFILE, getenv("HOME"));
+	strcat(MAPFILE, "/.map.pxec");
 #endif
-
-	FILE *fp;
-	char * line = NULL;
-	size_t len = 0;
-	ssize_t read;
-	char stored[MAX_WORDS][1000];
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////
 	for (int i = 0; i < MAX_WORDS ; i++)
-	{
 		strcpy(stored[i], "");
-	}
 
 	fp = fopen(MAPFILE, "r");
 	if (fp == NULL)
@@ -141,7 +214,10 @@ int main(int argc, char **argv)
 		fprintf(fp, "exit\nexit\n");
 		printf("save file created.\n");
 		fclose(fp);
-		exit(0);
+
+		fp = fopen(MAPFILE, "r");
+		if (fp == NULL)
+			return 1;
 	}
 
 	int entry_count = 0;
@@ -155,14 +231,7 @@ int main(int argc, char **argv)
 
 	if (line) free(line);
 
-	int cmd_found = 1;
-
-	if (run_arg == 0)
-	{
-		clear_screen();
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////
 	while(1)
 	{
 		int maxbuf = 1000;
@@ -178,7 +247,6 @@ int main(int argc, char **argv)
 		{
 			strcpy(in, cmdstr);
 		}
-
 		if (strcmp(in, "add") == 0)
 		{
 			// Read Entry Name
@@ -199,14 +267,14 @@ int main(int argc, char **argv)
 			strcpy(stored[entry_count+1], path);
 			free(path);
 
-			entry_count+=2;
 			// Save Entry+Path
+			entry_count+=2;
 			save_to_file(stored, MAPFILE);
 
-			printf(ANSI_COLOR_GREEN "added %s -> %s" ANSI_COLOR_RESET "\n",
+			printf(ANSI_COLOR_GREEN "added %s -> %s"
+					ANSI_COLOR_RESET "\n",
 					stored[entry_count-2], stored[entry_count-1]);
 		}
-
 		else if (strcmp(in, "rm") == 0)
 		{
 			printf(ANSI_COLOR_RED "removing " ANSI_COLOR_RESET " -> ");
@@ -233,7 +301,8 @@ int main(int argc, char **argv)
 			save_to_file(stored, MAPFILE);
 			printf((found == 1) 
 					?  ANSI_COLOR_RED "removed %s\n" ANSI_COLOR_RESET 
-					: ANSI_COLOR_RED "could not find %s\n"  ANSI_COLOR_RESET , in);
+					: ANSI_COLOR_RED "could not find %s\n"
+					ANSI_COLOR_RESET , in);
 
 			free(key);
 			free(val);
@@ -241,31 +310,7 @@ int main(int argc, char **argv)
 		}
 		else if ( strcmp(in,"ls") == 0)
 		{
-			int counter = 0;
-			for (int i = 0 ; i < MAX_WORDS ; i++)
-			{
-				if (i % 2 == 0 && strcmp(stored[i],"") != 0)
-				{
-					counter++;
-					if (strstr(stored[i+1], ".exe") == NULL)
-					{
-						printf(ANSI_COLOR_CYAN);
-					}
-					else
-					{
-						printf(ANSI_COLOR_GREEN);
-					}
-					if (counter % 5 == 0)
-					{
-						printf("\n");
-					}
-					printf((counter < 10) 
-							? "0%d: %s  " 
-							: "%d: %s  ", counter, stored[i]);
-
-					printf(ANSI_COLOR_RESET);
-				}
-			}
+			list(stored);
 		}
 		else if ( strcmp(in,"exit") == 0)
 		{
@@ -281,58 +326,18 @@ int main(int argc, char **argv)
 		}
 		else if (strcmp(in, "edit") == 0)
 		{
-			printf("editing save file..\n");
-			char * cmd = malloc(1024 * sizeof(char));
-
-			strcpy(cmd,"nvim ");
-#ifdef _WIN32
-			// WINDOWS
-			strcat(cmd, getenv("APPDATA"));
-			strcat(cmd, "\\map.pxec");
-#else
-			// LINUX
-			strcat(cmd, "map.pxec");
-#endif
-
-			int status = system( cmd );
-
-			free(cmd);
+			edit(MAPFILE);
 			return 0;
 		}
 		else
 		{
-			cmd_found = 0;
-			for (int i = 0 ; i < MAX_WORDS ; i++)
-			{
-				if ( i % 2 == 0 && strcmp(stored[i+1],"") !=0 && strcmp(in,stored[i]) == 0)
-				{
-					cmd_found = 1;
-
-					printf(ANSI_COLOR_GREEN "-> %s" ANSI_COLOR_RESET "\n", in);
-
-					char * cmd = malloc(1000 * sizeof(char));
-
-					strcpy(cmd, stored[i+1]);
-					strcat(cmd, argstr);
-
-					int status = system( cmd );
-					free(cmd);
-				}
-			}
-
-			if (cmd_found == 0)
-			{
-				printf(ANSI_COLOR_RED "->\n" ANSI_COLOR_RESET);
-				strcat(in, argstr);
-				int status = system( in );
-			}
+			run_cmd(in, stored, argstr);
 		}
+
 		free(in);
 
 		if(run_arg == 1)
-		{
 			break;
-		}
 	}
 
 	free(MAPFILE);
