@@ -28,7 +28,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 int MAX_WORDS = 2048;
 char VERSION[] = "0.1.1";
@@ -82,7 +82,6 @@ void save_to_file(char stored[][1000], char* file)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
-	int input_type = 0;
 	int run_arg = 0;
 
 	char * cmdstr = malloc(1024*sizeof(char));
@@ -111,16 +110,17 @@ int main(int argc, char **argv)
 		}
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 	char *MAPFILE = malloc(1024*sizeof(char));
 	strcpy(MAPFILE, "");
-	#ifdef _WIN32
+#ifdef _WIN32
 	// WINDOWS
 	strcpy(MAPFILE, getenv("APPDATA"));
 	strcat(MAPFILE, "\\map.pxec");
-	#else
+#else
 	// LINUX
 	strcat(MAPFILE, "map.pxec");
-	#endif
+#endif
 
 	FILE *fp;
 	char * line = NULL;
@@ -128,6 +128,7 @@ int main(int argc, char **argv)
 	ssize_t read;
 	char stored[MAX_WORDS][1000];
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 	for (int i = 0; i < MAX_WORDS ; i++)
 	{
 		strcpy(stored[i], "");
@@ -155,12 +156,13 @@ int main(int argc, char **argv)
 	if (line) free(line);
 
 	int cmd_found = 1;
-	
+
 	if (run_arg == 0)
 	{
 		clear_screen();
 	}
-	// Infinite Input
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 	while(1)
 	{
 		int maxbuf = 1000;
@@ -169,7 +171,7 @@ int main(int argc, char **argv)
 		{
 			getline(&in, &maxbuf, stdin);
 		}
-		
+
 		remove_newline(in);
 
 		if (run_arg == 1)
@@ -177,14 +179,20 @@ int main(int argc, char **argv)
 			strcpy(in, cmdstr);
 		}
 
-		if (input_type == 1)
+		if (strcmp(in, "add") == 0)
 		{
+			// Read Entry Name
+			printf(ANSI_COLOR_GREEN "adding" ANSI_COLOR_RESET " -> ");
+			getline(&in, &maxbuf, stdin);
+			remove_newline(in);
+
 			strcpy(stored[entry_count], in);
-			input_type = 2;
 			printf("path/exe -> ");
-		}
-		else if (input_type == 2)
-		{
+
+			// Read Path
+			getline(&in, &maxbuf, stdin);
+			remove_newline(in);
+
 			char *path = malloc(maxbuf * sizeof(char));
 			strcpy(path, "");
 			strcat(path, in);
@@ -192,15 +200,20 @@ int main(int argc, char **argv)
 			free(path);
 
 			entry_count+=2;
-
+			// Save Entry+Path
 			save_to_file(stored, MAPFILE);
 
 			printf(ANSI_COLOR_GREEN "added %s -> %s" ANSI_COLOR_RESET "\n",
-				stored[entry_count-2], stored[entry_count-1]);
-			input_type = 0;
+					stored[entry_count-2], stored[entry_count-1]);
 		}
-		else if (input_type == 3)
+
+		else if (strcmp(in, "rm") == 0)
 		{
+			printf(ANSI_COLOR_RED "removing " ANSI_COLOR_RESET " -> ");
+
+			getline(&in, &maxbuf, stdin);
+			remove_newline(in);
+
 			char * key = malloc(1000*sizeof(char));
 			char * val = malloc(1000*sizeof(char));
 
@@ -219,113 +232,99 @@ int main(int argc, char **argv)
 			}
 			save_to_file(stored, MAPFILE);
 			printf((found == 1) 
-				?  ANSI_COLOR_RED "removed %s\n" ANSI_COLOR_RESET 
-				: ANSI_COLOR_RED "could not find %s\n"  ANSI_COLOR_RESET , in);
+					?  ANSI_COLOR_RED "removed %s\n" ANSI_COLOR_RESET 
+					: ANSI_COLOR_RED "could not find %s\n"  ANSI_COLOR_RESET , in);
 
 			free(key);
 			free(val);
 
-			input_type = 0;
 		}
-		else if (input_type == 0) 
+		else if ( strcmp(in,"ls") == 0)
 		{
-			if ( strcmp(in,"ls") == 0)
+			int counter = 0;
+			for (int i = 0 ; i < MAX_WORDS ; i++)
 			{
-				int counter = 0;
-				for (int i = 0 ; i < MAX_WORDS ; i++)
+				if (i % 2 == 0 && strcmp(stored[i],"") != 0)
 				{
-					if (i % 2 == 0 && strcmp(stored[i],"") != 0)
+					counter++;
+					if (strstr(stored[i+1], ".exe") == NULL)
 					{
-						counter++;
-						if (strstr(stored[i+1], ".exe") == NULL)
-						{
-							printf(ANSI_COLOR_CYAN);
-						}
-						else
-						{
-							printf(ANSI_COLOR_GREEN);
-						}
-						if (counter % 5 == 0)
-						{
-							printf("\n");
-						}
-						printf((counter < 10) 
+						printf(ANSI_COLOR_CYAN);
+					}
+					else
+					{
+						printf(ANSI_COLOR_GREEN);
+					}
+					if (counter % 5 == 0)
+					{
+						printf("\n");
+					}
+					printf((counter < 10) 
 							? "0%d: %s  " 
 							: "%d: %s  ", counter, stored[i]);
 
-						printf(ANSI_COLOR_RESET);
-					}
+					printf(ANSI_COLOR_RESET);
 				}
 			}
-			else if ( strcmp(in,"exit") == 0)
-			{
-				break;
-			}
-			else if ( strcmp(in,"help") == 0)
-			{
-				printf("add, rm, ls, clear, help, exit\n");
-			}
-			else if ( strcmp(in, "clear") == 0)
-			{
-				clear_screen();
-			}
-			else if (strcmp(in, "edit") == 0)
-			{
-				printf("editing save file..\n");
-				char * cmd = malloc(1024 * sizeof(char));
+		}
+		else if ( strcmp(in,"exit") == 0)
+		{
+			break;
+		}
+		else if ( strcmp(in,"help") == 0)
+		{
+			printf("add, rm, ls, clear, help, exit\n");
+		}
+		else if ( strcmp(in, "clear") == 0)
+		{
+			clear_screen();
+		}
+		else if (strcmp(in, "edit") == 0)
+		{
+			printf("editing save file..\n");
+			char * cmd = malloc(1024 * sizeof(char));
 
-				strcpy(cmd,"nvim ");
-				#ifdef _WIN32
-				// WINDOWS
-				strcat(cmd, getenv("APPDATA"));
-				strcat(cmd, "\\map.pxec");
-				#else
-				// LINUX
-				strcat(cmd, "map.pxec");
-				#endif
+			strcpy(cmd,"nvim ");
+#ifdef _WIN32
+			// WINDOWS
+			strcat(cmd, getenv("APPDATA"));
+			strcat(cmd, "\\map.pxec");
+#else
+			// LINUX
+			strcat(cmd, "map.pxec");
+#endif
 
-				int status = system( cmd );
+			int status = system( cmd );
 
-				free(cmd);
-				return 0;
-			}
-			else if ( strcmp(in, "add") == 0)
+			free(cmd);
+			return 0;
+		}
+		else
+		{
+			cmd_found = 0;
+			for (int i = 0 ; i < MAX_WORDS ; i++)
 			{
-				input_type = 1;
-				printf(ANSI_COLOR_GREEN "adding" ANSI_COLOR_RESET " -> ");
-			}
-			else if ( strcmp(in, "rm") == 0)
-			{
-				input_type = 3;
-				printf(ANSI_COLOR_RED "removing " ANSI_COLOR_RESET " -> ");
-			}
-			else
-			{
-				cmd_found = 0;
-				for (int i = 0 ; i < MAX_WORDS ; i++)
+				if ( i % 2 == 0 && strcmp(stored[i+1],"") !=0 && strcmp(in,stored[i]) == 0)
 				{
-					if ( i % 2 == 0 && strcmp(stored[i+1],"") !=0 && strcmp(in,stored[i]) == 0)
-					{
-						cmd_found = 1;
+					cmd_found = 1;
 
-						printf(ANSI_COLOR_GREEN "-> %s" ANSI_COLOR_RESET "\n", in);
+					printf(ANSI_COLOR_GREEN "-> %s" ANSI_COLOR_RESET "\n", in);
 
-						char * cmd = malloc(1000 * sizeof(char));
+					char * cmd = malloc(1000 * sizeof(char));
 
-						strcpy(cmd, stored[i+1]);
-						strcat(cmd, argstr);
+					strcpy(cmd, stored[i+1]);
+					strcat(cmd, argstr);
 
-						int status = system( cmd );
-						free(cmd);
-					}
+					int status = system( cmd );
+					free(cmd);
 				}
+			}
 
-				if (cmd_found == 0)
-				{
-					printf(ANSI_COLOR_RED "->\n" ANSI_COLOR_RESET);
-					strcat(in, argstr);
-					int status = system( in );
-				}
+			if (cmd_found == 0)
+			{
+				printf(ANSI_COLOR_RED "->\n" ANSI_COLOR_RESET);
+				strcat(in, argstr);
+				int status = system( in );
 			}
 		}
 		free(in);
