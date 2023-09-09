@@ -5,7 +5,7 @@
 #include "pxec.h"
 
 #define C_RED              "\x1b[31m"
-#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define C_CYAN    "\x1b[36m"
 #define C_RESET            "\x1b[0m"
 #define C_GREEN            "\x1b[32m"
 
@@ -31,8 +31,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Loading File
+// Commands
+//
+//
+//
+//
+//
+//
+
 int MAX_WORDS = 2048;
 char VERSION[] = "0.1.1";
+char STORED[2048][1000];
+int MAXBUFFER = 1000;
+char* MAPFILE;
 
 void print_version()
 {
@@ -58,19 +70,19 @@ void clear_screen()
 	}
 }
 
-void save_to_file(char stored[][1000], char* file)
+void save_to_file()
 {
 	FILE *fp;
 
-	fp = fopen(file, "w+");
+	fp = fopen(MAPFILE, "w+");
 	char * outstr = malloc(50000 * sizeof(char));
 	strcpy(outstr, "");
 	for (int i = 0; i < MAX_WORDS ; i++)
 	{
-		if (strcmp(stored[i],"") != 0)
+		if (strcmp(STORED[i],"") != 0)
 		{
 			char * temp = malloc(2048 * sizeof(char));
-			strcpy(temp, stored[i]);
+			strcpy(temp, STORED[i]);
 			strcat(temp, "\n");
 			strcat(outstr, temp);
 			free(temp);
@@ -81,13 +93,13 @@ void save_to_file(char stored[][1000], char* file)
 	free(outstr);
 }
 
-void run_cmd(char* in, char stored[][1000], char* argstr)
+void run_cmd(char* in, char* argstr)
 {
 	int cmd_found = 0;
 	for (int i = 0 ; i < MAX_WORDS ; i++)
 	{
-		if ( i % 2 == 0 && strcmp(stored[i+1],"") !=0 
-				&& strcmp(in,stored[i]) == 0)
+		if ( i % 2 == 0 && strcmp(STORED[i+1],"") !=0 
+				&& strcmp(in,STORED[i]) == 0)
 		{
 			cmd_found = 1;
 
@@ -96,7 +108,7 @@ void run_cmd(char* in, char stored[][1000], char* argstr)
 
 			char * cmd = malloc(1000 * sizeof(char));
 
-			strcpy(cmd, stored[i+1]);
+			strcpy(cmd, STORED[i+1]);
 			strcat(cmd, argstr);
 
 			beep(440,20);
@@ -112,36 +124,68 @@ void run_cmd(char* in, char stored[][1000], char* argstr)
 
 }
 
-void list(char stored[][1000])
+void print_list_entry(int i, int counter)
+{
+	int position = 0;
+	int cutoff = 25;
+	printf((strstr(STORED[i+1], ".exe") != NULL)
+			? C_GREEN : C_CYAN);
+	if (counter<10)
+	{
+		printf("[ 00%d ]", counter);
+	} 
+	else if (counter<100)
+	{
+		printf("[ 0%d ]", counter);
+	} 
+	else if (counter<1000)
+	{
+		printf("[ %d ]", counter);
+	}
+
+	printf("  CMD  ");
+	// TODO
+	// impl [APP, CMD, WEB] here
+	//
+	position = 12;
+
+	for( int c = 0 ; c < strlen(STORED[i]) ; c++)
+	{
+		printf("%c",STORED[i][c]);
+		position++;
+		if (position+2 >= cutoff)
+		{
+			printf("..");
+			position += 2;
+			break;
+		}
+	}
+	for( int c = position ; c < cutoff ; c++)
+	{
+		printf(" ");
+	}
+	printf("  --->  ");
+	printf(STORED[i+1]);
+	printf("\n");
+}
+
+void list()
 {
 	int counter = 0;
 	for (int i = 0 ; i < MAX_WORDS ; i++)
 	{
-		if (i % 2 == 0 && strcmp(stored[i],"") != 0)
+		if (i % 2 == 0 && strcmp(STORED[i],"") != 0)
 		{
 			counter++;
-			if (strstr(stored[i+1], ".exe") == NULL)
-			{
-				printf(ANSI_COLOR_CYAN);
-			}
-			else
-			{
-				printf(C_GREEN);
-			}
-			if (counter % 5 == 0)
-			{
-				printf("\n");
-			}
-			printf((counter < 10) 
-					? "0%d: %s  " 
-					: "%d: %s  ", counter, stored[i]);
+
+			print_list_entry(i, counter);
 
 			printf(C_RESET);
 		}
 	}
 }
 
-void edit(char* MAPFILE)
+void edit()
 {
 	printf("editing save file..\n");
 	char * cmd = malloc(1024 * sizeof(char));
@@ -152,6 +196,65 @@ void edit(char* MAPFILE)
 	int status = system( cmd );
 
 	free(cmd);
+}
+void add_entry(char* in, int* entry_count)
+{
+	printf(C_GREEN "adding" C_RESET " -> ");
+	getline(&in, &MAXBUFFER, stdin);
+	remove_newline(in);
+
+	strcpy(STORED[*entry_count], in);
+	printf(C_GREEN "%s will run" C_RESET "-> ", in);
+	getline(&in, &MAXBUFFER, stdin);
+	remove_newline(in);
+
+	char *path = malloc(MAXBUFFER * sizeof(char));
+	strcpy(path, "");
+	strcat(path, in);
+	strcpy(STORED[*entry_count+1], path);
+	free(path);
+
+	// Save Entry+Path
+	*entry_count+=2;
+	save_to_file();
+
+	printf(C_GREEN "added %s -> %s"
+			C_RESET "\n",
+			STORED[*entry_count-2],
+			STORED[*entry_count-1]);
+
+}
+
+void remove_entry(char* in)
+{
+	printf(C_RED "removing " C_RESET " -> ");
+
+	getline(&in, &MAXBUFFER, stdin);
+	remove_newline(in);
+
+	char * key = malloc(1000*sizeof(char));
+	char * val = malloc(1000*sizeof(char));
+
+	int found = 0;
+	// remove entry [key, value]
+	for (int i = 0; i < MAX_WORDS ; i++)
+	{
+		if ( i % 2 == 0 && strcmp(STORED[i],in) == 0)
+		{
+			strcpy(key,STORED[i]);
+			strcpy(val,STORED[i+1]);
+			strcpy(STORED[i], "");
+			strcpy(STORED[i+1], "");
+			found = 1;
+		}
+	}
+	save_to_file();
+	printf((found == 1) ?  C_RED "removed %s\n"C_RESET 
+			: C_RED "could not find %s\n"
+			C_RESET , in);
+
+	free(key);
+	free(val);
 }
 
 void beep(int freq, int len)
@@ -178,14 +281,13 @@ int main(int argc, char **argv)
 	char * argstr = malloc(1024*sizeof(char));
 	strcpy(argstr, "");
 
-	char *MAPFILE = malloc(1024*sizeof(char));
+	MAPFILE = malloc(1024*sizeof(char));
 	strcpy(MAPFILE, "");
 	FILE *fp;
 
 	char * line = NULL;
 	size_t len = 0;
 	ssize_t read;
-	char stored[MAX_WORDS][1000];
 
 
 	for (int i = 0; i < argc; ++i)
@@ -211,7 +313,7 @@ int main(int argc, char **argv)
 	}
 
 	///////////////////////////////////////////////////////////////////////////
-
+	// Load File
 
 #ifdef _WIN32
 	// WINDOWS
@@ -223,7 +325,7 @@ int main(int argc, char **argv)
 	strcat(MAPFILE, "/.map.pxec");
 #endif
 	for (int i = 0; i < MAX_WORDS ; i++)
-		strcpy(stored[i], "");
+		strcpy(STORED[i], "");
 
 	fp = fopen(MAPFILE, "r");
 	if (fp == NULL)
@@ -245,7 +347,7 @@ int main(int argc, char **argv)
 	while ((read = getline(&line, &len, fp)) != -1)
 	{
 		remove_newline(line);
-		strcpy(stored[entry_count],line);
+		strcpy(STORED[entry_count],line);
 		entry_count++;
 	}
 	fclose(fp);
@@ -253,13 +355,13 @@ int main(int argc, char **argv)
 	if (line) free(line);
 
 	///////////////////////////////////////////////////////////////////////////
+	/// Commands
 	while(1)
 	{
-		int maxbuf = 1000;
-		char *in = malloc(maxbuf * sizeof(char));
+		char *in = malloc(MAXBUFFER * sizeof(char));
 		if (run_arg == 0)
 		{
-			getline(&in, &maxbuf, stdin);
+			getline(&in, &MAXBUFFER, stdin);
 			remove_newline(in);
 		}
 		else
@@ -268,90 +370,25 @@ int main(int argc, char **argv)
 		}
 
 		if (strcmp(in, "add") == 0)
-		{
-			// Read Entry Name
-			printf(C_GREEN "adding" C_RESET " -> ");
-			getline(&in, &maxbuf, stdin);
-			remove_newline(in);
-
-			strcpy(stored[entry_count], in);
-			printf("path/exe -> ");
-
-			// Read Path
-			getline(&in, &maxbuf, stdin);
-			remove_newline(in);
-
-			char *path = malloc(maxbuf * sizeof(char));
-			strcpy(path, "");
-			strcat(path, in);
-			strcpy(stored[entry_count+1], path);
-			free(path);
-
-			// Save Entry+Path
-			entry_count+=2;
-			save_to_file(stored, MAPFILE);
-
-			printf(C_GREEN "added %s -> %s"
-					C_RESET "\n",
-					stored[entry_count-2],
-					stored[entry_count-1]);
-		}
-		else if (strcmp(in, "rm") == 0)
-		{
-			printf(C_RED "removing " C_RESET " -> ");
-
-			getline(&in, &maxbuf, stdin);
-			remove_newline(in);
-
-			char * key = malloc(1000*sizeof(char));
-			char * val = malloc(1000*sizeof(char));
-
-			int found = 0;
-			// remove entry [key, value]
-			for (int i = 0; i < MAX_WORDS ; i++)
-			{
-				if ( i % 2 == 0 && strcmp(stored[i],in) == 0)
-				{
-					strcpy(key,stored[i]);
-					strcpy(val,stored[i+1]);
-					strcpy(stored[i], "");
-					strcpy(stored[i+1], "");
-					found = 1;
-				}
-			}
-			save_to_file(stored, MAPFILE);
-			printf((found == 1) ?  C_RED "removed %s\n"C_RESET 
-					: C_RED "could not find %s\n"
-					C_RESET , in);
-
-			free(key);
-			free(val);
-
-		}
+			add_entry(in, &entry_count);
+		else if (strcmp(in, "rm") == 0) // in, MAPFILE
+			remove_entry(in);
 		else if ( strcmp(in,"ls") == 0)
-		{
-			list(stored);
-		}
+			list();
 		else if ( strcmp(in,"exit") == 0)
-		{
 			break;
-		}
 		else if ( strcmp(in,"help") == 0)
-		{
 			printf("add, rm, ls, clear, help, exit\n");
-		}
 		else if ( strcmp(in, "clear") == 0)
-		{
 			clear_screen();
-		}
 		else if (strcmp(in, "edit") == 0)
 		{
-			edit(MAPFILE);
+			edit();
 			break;
 		}
 		else
 		{
-			run_cmd(in, stored, argstr);
+			run_cmd(in, argstr);
 		}
 
 		free(in);
