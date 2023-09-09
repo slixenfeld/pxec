@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include "pxec.h"
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_CYAN    "\x1b[36m"
@@ -98,11 +99,13 @@ void run_cmd(char* in, char stored[][1000], char* argstr)
 			strcpy(cmd, stored[i+1]);
 			strcat(cmd, argstr);
 
+			beep(440,20);
 			int status = system( cmd );
 			free(cmd);
 		}
 	}
 	if (cmd_found == 0) {
+		beep(200,20);
 		printf(ANSI_COLOR_RED "could not find \'%s\' \n"
 				ANSI_COLOR_RESET, in);
 	}
@@ -136,7 +139,6 @@ void list(char stored[][1000])
 			printf(ANSI_COLOR_RESET);
 		}
 	}
-
 }
 
 void edit(char* MAPFILE)
@@ -152,15 +154,30 @@ void edit(char* MAPFILE)
 	free(cmd);
 }
 
+void beep(int freq, int len)
+{
+#ifdef _WIN32
+
+#else
+	char * beepstr = malloc(0x20 + sizeof(char));
+	strcpy(beepstr, "");
+	snprintf(beepstr, 0x20, "beep -f %d -l %d", freq, len);
+	system(beepstr);
+	free(beepstr);
+#endif
+}
 //////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
+	beep(200, 10);
+	beep(400, 10);
+
 	int run_arg = 0;
 	char * cmdstr = malloc(1024*sizeof(char));
 	strcpy(cmdstr, "");
 	char * argstr = malloc(1024*sizeof(char));
 	strcpy(argstr, "");
-	
+
 	char *MAPFILE = malloc(1024*sizeof(char));
 	strcpy(MAPFILE, "");
 	FILE *fp;
