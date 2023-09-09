@@ -128,8 +128,6 @@ void print_list_entry(int i, int counter)
 {
 	int position = 0;
 	int cutoff = 25;
-	printf((strstr(STORED[i+1], ".exe") != NULL)
-			? C_GREEN : C_CYAN);
 	if (counter<10)
 	{
 		printf("[ 00%d ]", counter);
@@ -143,7 +141,19 @@ void print_list_entry(int i, int counter)
 		printf("[ %d ]", counter);
 	}
 
-	printf("  CMD  ");
+	if (strstr(STORED[i+1], "https") != NULL)
+	{
+		printf( C_CYAN"  WEB  ");
+	}
+	else if (strstr(STORED[i+1], ".exe"))
+	{
+		printf( C_GREEN"  APP  ");
+	}
+	else
+	{
+		printf( "  CMD  ");
+	}
+
 	// TODO
 	// impl [APP, CMD, WEB] here
 	//
@@ -166,6 +176,7 @@ void print_list_entry(int i, int counter)
 	}
 	printf("  --->  ");
 	printf(STORED[i+1]);
+	printf(C_RESET);
 	printf("\n");
 }
 
