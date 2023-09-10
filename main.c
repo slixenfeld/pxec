@@ -239,7 +239,7 @@ void run_cmd(char* in, char* argstr)
 				chdir(path); // running dir
 #ifdef _WIN32
 			// Set missing end quotes around executable
-				if (STORED[i+1][strlen(STORED[i+1])-1] != "\"")
+				if (STORED[i+1][strlen(STORED[i+1])-1] != '\"')
 					strcat(cmd, "\"");
 #endif
 			}
