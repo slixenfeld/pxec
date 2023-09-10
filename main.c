@@ -208,7 +208,7 @@ void run_cmd(char* in, char* argstr)
 				strcpy(cmd, "start \"\" ");
 			}
 #endif
-			strcpy(cmd, STORED[i+1]); //executable
+			strcat(cmd, STORED[i+1]); //executable
 			strcat(cmd, argstr);
 
 			beep(440,20);
