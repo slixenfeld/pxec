@@ -333,7 +333,7 @@ void print_list_entry(int i, int counter)
 	printf("\n");
 }
 
-void list()
+void list(char* filter)
 {
 	int counter = 0;
 	for (int i = 0 ; i < MAX_WORDS ; i++)
@@ -341,9 +341,10 @@ void list()
 		if (i % 2 == 0 && strcmp(STORED[i],"") != 0)
 		{
 			counter++;
-
-			print_list_entry(i, counter);
-
+			if (strlen(filter) == 0 || (strstr(STORED[i], filter) != NULL))
+			{
+				print_list_entry(i, counter);
+			}
 			printf(C_RESET);
 		}
 	}
@@ -538,7 +539,7 @@ int main(int argc, char **argv)
 		else if (strcmp(in, "rm") == 0) // in, MAPFILE
 			remove_entry(in);
 		else if ( strcmp(in,"ls") == 0)
-			list();
+			list("");
 		else if ( strcmp(in,"exit") == 0)
 			break;
 		else if ( strcmp(in,"help") == 0)
