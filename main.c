@@ -41,7 +41,7 @@
 //
 
 int MAX_WORDS = 2048;
-char VERSION[] = "0.1.1";
+char VERSION[] = "0.00000000000000000000000000000000001";
 char STORED[2048][1000];
 int MAXBUFFER = 1000;
 char* MAPFILE;
@@ -111,9 +111,11 @@ void run_cmd(char* in, char* argstr)
 
 			int position = 0;
 			int cutoff = 25;
-			char delimiter[] = "/";
+			char* delimiter = malloc(10 * sizeof(char)); 
+
+			delimiter = "/";
 #ifdef _WIN32
-			delimiter[] = "\\";
+			delimiter = "\\";
 #endif
 			char *ptr;
 			int delims = 0;
@@ -138,24 +140,26 @@ void run_cmd(char* in, char* argstr)
 				ptr2 = strtok(s, delimiter);
 
 #ifdef _WIN32
-				strcat(path, ptr2);
-				strcat(path,delimiter);
+
 #else
 				if ( STORED[i+1][0] == '/') 
 				{
 					strcat(path,delimiter);
 				}
+#endif
 				strcat(path, ptr2);
 				strcat(path,delimiter);
-#endif
-
 				while(ptr2 != NULL)
 				{
 					cur_delim++;
 					ptr2 = strtok(NULL, delimiter);
 					strcat(path, ptr2);
 #ifdef _WIN32
-					strcat(path,"\\");
+					strcat(path,delimiter);
+					if ( cur_delim == delims-2)
+					{
+						break;
+					}
 #else
 					strcat(path,delimiter);
 					if ( cur_delim == delims-2)
@@ -163,17 +167,32 @@ void run_cmd(char* in, char* argstr)
 						break;
 					}
 #endif
-					printf("%s\n",path);
+					//printf("%s\n",path);
 					if (cur_delim == delims-1) break;
 				} 
 			}
 
-			// printf("delimiters: %d ", delims);
-
 			free(s);
+			free(delimiter);
+
+			int type = 1; // 1 = WEB, 2 = APP, 3 = CMD
+
+	if (strstr(STORED[i+1], "https") != NULL)
+	{
+		type = 1;
+	}
+	else if ( delims > 1)
+	{
+		type = 2;
+	}
+	else
+	{
+		type = 3;
+	}
 
 
-			printf("PATH: %s\n", path);
+
+		//	printf("PATH: %s\n", path);
 
 
 			// TODO
@@ -183,11 +202,20 @@ void run_cmd(char* in, char* argstr)
 			// CMD = <input>
 			//
 
+#ifdef _WIN32
+			if (type == 2)
+			{
+				strcpy(cmd, "start \"\" ");
+			}
+#endif
 			strcpy(cmd, STORED[i+1]); //executable
 			strcat(cmd, argstr);
 
 			beep(440,20);
-			chdir(path); // running dir
+			if (type == 2)
+				chdir(path); // running dir
+			
+
 			int status = system( cmd );
 			free(cmd);
 		}
@@ -205,9 +233,9 @@ void print_list_entry(int i, int counter)
 {
 	int position = 0;
 	int cutoff = 25;
-	char delimiter[] = "/";
+	char* delimiter = malloc(10 * sizeof(char));
 #ifdef _WIN32
-	delimiter[] = "\\";
+	delimiter = "\\";
 #endif
 	char *ptr;
 	int delims = 0;
