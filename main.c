@@ -548,10 +548,22 @@ int main(int argc, char **argv)
 			remove_newline(in);
 			list(in);	
 		}
-		else if ( strcmp(in,"exit") == 0)
+		else if ( strcmp(in,"exit") == 0
+			||strcmp(in,"quit") == 0
+			||strcmp(in,"q") == 0
+			)
 			break;
 		else if ( strcmp(in,"help") == 0)
-			printf("add, rm, ls, find, clear, help, exit\n");
+			printf(
+			"add   --> add new alias\n"
+			 "rm    --> remove alias\n"
+			 "ls    --> list all aliases\n"
+			 "find  --> find alias\n"
+			 "clear --> clear screen\n"
+			 "help  --> display this message\n"
+			 "exit  --> exit\n"
+			 "q     --> exit\n"
+			 "quit  --> exit\n");
 		else if ( strcmp(in, "clear") == 0)
 			clear_screen();
 		else if (strcmp(in, "edit") == 0)
