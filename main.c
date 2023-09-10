@@ -231,19 +231,20 @@ void run_cmd(char* in, char* argstr)
 #else
 #endif
 			strcat(cmd, STORED[i+1]); //executable
-			strcat(cmd, argstr);
-
-			beep(440,20);
 			if (type == 2)
 			{
 				chdir(path); // running dir
 #ifdef _WIN32
 			// Set missing end quotes around executable
-				if (STORED[i+1][strlen(STORED[i+1])-1] != "\"")
-					strcat(cmd, "\"");
+				if (STORED[i+1][strlen(STORED[i+1])-1] != '\"')
+					strcat(cmd, "\" ");
 #endif
 			}
 
+
+			strcat(cmd, argstr);
+
+			beep(440,20);
 			int status = system( cmd );
 			free(cmd);
 		}
