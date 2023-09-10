@@ -108,10 +108,86 @@ void run_cmd(char* in, char* argstr)
 
 			char * cmd = malloc(1000 * sizeof(char));
 
-			strcpy(cmd, STORED[i+1]);
+
+			int position = 0;
+			int cutoff = 25;
+			char delimiter[] = "/";
+#ifdef _WIN32
+			delimiter[] = "\\";
+#endif
+			char *ptr;
+			int delims = 0;
+			int cur_delim = 0;
+			char* path = malloc(0x40 * sizeof(char*));
+
+			char* s = malloc(0x40 * sizeof(char*));
+			strcpy(s, STORED[i+1]);
+			ptr = strtok(s, delimiter);
+			while(ptr != NULL)
+			{
+				delims++;
+				ptr = strtok(NULL, delimiter);
+			}
+
+			if (delims > 1)
+			{
+				char* s = malloc(0x40 * sizeof(char*));
+				char *ptr2;
+				strcpy(path, "");
+				strcpy(s, STORED[i+1]);
+				ptr2 = strtok(s, delimiter);
+
+#ifdef _WIN32
+				strcat(path, ptr2);
+				strcat(path,delimiter);
+#else
+				if ( STORED[i+1][0] == '/') 
+				{
+					strcat(path,delimiter);
+				}
+				strcat(path, ptr2);
+				strcat(path,delimiter);
+#endif
+
+				while(ptr2 != NULL)
+				{
+					cur_delim++;
+					ptr2 = strtok(NULL, delimiter);
+					strcat(path, ptr2);
+#ifdef _WIN32
+					strcat(path,"\\");
+#else
+					strcat(path,delimiter);
+					if ( cur_delim == delims-2)
+					{
+						break;
+					}
+#endif
+					printf("%s\n",path);
+					if (cur_delim == delims-1) break;
+				} 
+			}
+
+			// printf("delimiters: %d ", delims);
+
+			free(s);
+
+
+			printf("PATH: %s\n", path);
+
+
+			// TODO
+			// Determine execution logic from type
+			// APP = (windows= start "" <input>, linux= <input>
+			// WEB = <browser> <input>
+			// CMD = <input>
+			//
+
+			strcpy(cmd, STORED[i+1]); //executable
 			strcat(cmd, argstr);
 
 			beep(440,20);
+			chdir(path); // running dir
 			int status = system( cmd );
 			free(cmd);
 		}
@@ -124,10 +200,32 @@ void run_cmd(char* in, char* argstr)
 
 }
 
+
 void print_list_entry(int i, int counter)
 {
 	int position = 0;
 	int cutoff = 25;
+	char delimiter[] = "/";
+#ifdef _WIN32
+	delimiter[] = "\\";
+#endif
+	char *ptr;
+	int delims = 0;
+	int cur_delim = 0;
+	char* path = malloc(0x40 * sizeof(char*));
+
+	char* s = malloc(0x40 * sizeof(char*));
+	strcpy(s, STORED[i+1]);
+	ptr = strtok(s, delimiter);
+	while(ptr != NULL)
+	{
+		delims++;
+		ptr = strtok(NULL, delimiter);
+	}
+
+
+
+
 	if (counter<10)
 	{
 		printf("[ 00%d ]", counter);
@@ -145,7 +243,7 @@ void print_list_entry(int i, int counter)
 	{
 		printf( C_CYAN"  WEB  ");
 	}
-	else if (strstr(STORED[i+1], ".exe"))
+	else if ( delims > 1)
 	{
 		printf( C_GREEN"  APP  ");
 	}
@@ -156,8 +254,15 @@ void print_list_entry(int i, int counter)
 
 	// TODO
 	// impl [APP, CMD, WEB] here
+	// determine type from path
+	// APP = input with slash delimiters
+	// WEB = input with http / https
+	// CMD = everything else
 	//
 	position = 12;
+
+
+
 
 	for( int c = 0 ; c < strlen(STORED[i]) ; c++)
 	{
