@@ -270,7 +270,7 @@ void print_list_entry(int i, int counter)
 		printf("[ %d ]", counter);
 	}
 
-	if (strstr(STORED[i+1], "https") != NULL)
+	if (strstr(STORED[i+1], "https:") != NULL || strstr(STORED[i+1], "http:") != NULL )
 	{
 		printf( C_CYAN"  WEB  ");
 	}
