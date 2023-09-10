@@ -13,7 +13,7 @@
  * (C) 2023, Simon Lixenfeld
  *
  * commands:
- * built-in: add, rm, ls, exit, help, clear, edit
+ * built-in: add, rm, ls, find, exit, help, clear, edit
  *
  * License: GPLv3(+), see LICENSE for details
  *
@@ -541,10 +541,17 @@ int main(int argc, char **argv)
 			remove_entry(in);
 		else if ( strcmp(in,"ls") == 0)
 			list("");
+		else if ( strcmp(in,"find") == 0)
+		{
+			printf( C_CYAN"find"C_RESET" -> ");
+			getline(&in, &MAXBUFFER, stdin);
+			remove_newline(in);
+			list(in);	
+		}
 		else if ( strcmp(in,"exit") == 0)
 			break;
 		else if ( strcmp(in,"help") == 0)
-			printf("add, rm, ls, clear, help, exit\n");
+			printf("add, rm, ls, find, clear, help, exit\n");
 		else if ( strcmp(in, "clear") == 0)
 			clear_screen();
 		else if (strcmp(in, "edit") == 0)
