@@ -202,12 +202,15 @@ void run_cmd(char* in, char* argstr)
 			// CMD = <input>
 			//
 
+			strcpy(cmd, "");
 #ifdef _WIN32
 			if (type == 2)
 			{
 				strcpy(cmd, "start \"\" ");
 			}
+#else
 #endif
+
 			strcat(cmd, STORED[i+1]); //executable
 			strcat(cmd, argstr);
 
