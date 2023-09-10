@@ -93,22 +93,48 @@ void save_to_file()
 	free(outstr);
 }
 
+int number_check(char* in)
+{
+	char* numbers = "1234567890";
+	for (int i = 0; i < strlen(in) ; i++)
+	{
+		int valid = 0;
+		for(int j = 0; j < strlen(numbers) ; j++)
+		{
+			if (in[i] == numbers[j]) 
+			{
+				valid = 1;
+			}
+		}
+		if (!valid) return 1;
+	}
+	return 0;
+}
+
 void run_cmd(char* in, char* argstr)
 {
 	int cmd_found = 0;
+	int cmd_count = 0;
 	for (int i = 0 ; i < MAX_WORDS ; i++)
 	{
-		if ( i % 2 == 0 && strcmp(STORED[i+1],"") !=0 
-				&& strcmp(in,STORED[i]) == 0)
+		char count_str[5];
+
+		if (i % 2 == 0)
+		{
+			cmd_count++;
+		}
+		if (!number_check(in))
+		{
+			sprintf(count_str, "%d", cmd_count);
+		}
+		if ( (i % 2 == 0 && strcmp(STORED[i+1],"") !=0) &&
+		( (strcmp(in,STORED[i]) == 0) || strcmp(count_str,in) == 0 ) )
 		{
 			cmd_found = 1;
-
 			printf(C_GREEN "-> %s"
 					C_RESET "\n", in);
 
 			char * cmd = malloc(1000 * sizeof(char));
-
-
 			int position = 0;
 			int cutoff = 25;
 			char* delimiter = malloc(10 * sizeof(char)); 
@@ -173,36 +199,27 @@ void run_cmd(char* in, char* argstr)
 			}
 
 			free(s);
-			free(delimiter);
 
 			int type = 1; // 1 = WEB, 2 = APP, 3 = CMD
 
-	if (strstr(STORED[i+1], "https") != NULL)
-	{
-		type = 1;
-	}
-	else if ( delims > 1)
-	{
-		type = 2;
-	}
-	else
-	{
-		type = 3;
-	}
+			if (strstr(STORED[i+1], "https") != NULL)
+			{
+				type = 1;
+			}
+			else if ( delims > 1)
+			{
+				type = 2;
+			}
+			else
+			{
+				type = 3;
+			}
 
 
 
-		//	printf("PATH: %s\n", path);
-
-
-			// TODO
-			// Determine execution logic from type
-			// APP = (windows= start "" <input>, linux= <input>
-			// WEB = <browser> <input>
-			// CMD = <input>
-			//
-
+			//	printf("PATH: %s\n", path);
 			strcpy(cmd, "");
+
 #ifdef _WIN32
 			if (type == 2)
 			{
@@ -217,7 +234,7 @@ void run_cmd(char* in, char* argstr)
 			beep(440,20);
 			if (type == 2)
 				chdir(path); // running dir
-			
+
 
 			int status = system( cmd );
 			free(cmd);
@@ -270,7 +287,8 @@ void print_list_entry(int i, int counter)
 		printf("[ %d ]", counter);
 	}
 
-	if (strstr(STORED[i+1], "https:") != NULL || strstr(STORED[i+1], "http:") != NULL )
+	if (strstr(STORED[i+1], "https:") != NULL ||
+		strstr(STORED[i+1], "http:") != NULL )
 	{
 		printf( C_CYAN"  WEB  ");
 	}
@@ -283,16 +301,7 @@ void print_list_entry(int i, int counter)
 		printf( "  CMD  ");
 	}
 
-	// TODO
-	// impl [APP, CMD, WEB] here
-	// determine type from path
-	// APP = input with slash delimiters
-	// WEB = input with http / https
-	// CMD = everything else
-	//
 	position = 12;
-
-
 
 
 	for( int c = 0 ; c < strlen(STORED[i]) ; c++)
