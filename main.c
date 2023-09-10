@@ -215,8 +215,6 @@ void run_cmd(char* in, char* argstr)
 				type = 3;
 			}
 
-
-
 			//	printf("PATH: %s\n", path);
 			strcpy(cmd, "");
 
@@ -224,17 +222,27 @@ void run_cmd(char* in, char* argstr)
 			if (type == 2)
 			{
 				strcpy(cmd, "start \"\" ");
+
+			// Set missing beginning quotes around executable
+				if (STORED[i+1][0] != '\"') {
+					strcat(cmd, "\"");
+				}
 			}
 #else
 #endif
-
 			strcat(cmd, STORED[i+1]); //executable
 			strcat(cmd, argstr);
 
 			beep(440,20);
 			if (type == 2)
+			{
 				chdir(path); // running dir
-
+#ifdef _WIN32
+			// Set missing end quotes around executable
+				if (STORED[i+1][strlen(STORED[i+1])-1] != "\"")
+					strcat(cmd, "\"");
+#endif
+			}
 
 			int status = system( cmd );
 			free(cmd);
