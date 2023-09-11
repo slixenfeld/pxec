@@ -93,6 +93,12 @@ void save_to_file()
 	free(outstr);
 }
 
+int http_check(char* text)
+{
+	return (strstr(text, "https:") != NULL ||
+		strstr(text, "http:") != NULL);
+}
+
 int number_check(char* in)
 {
 	char* numbers = "1234567890";
@@ -202,7 +208,7 @@ void run_cmd(char* in, char* argstr)
 
 			int type = 1; // 1 = WEB, 2 = APP, 3 = CMD
 
-			if (strstr(STORED[i+1], "https") != NULL)
+			if (http_check(STORED[i+1]))
 			{
 				type = 1;
 			}
@@ -244,8 +250,9 @@ void run_cmd(char* in, char* argstr)
 
 			strcat(cmd, argstr);
 
-			beep(440,20);
+			beep(440,10);
 			int status = system( cmd );
+			beep(500,10);
 			free(cmd);
 		}
 	}
@@ -263,6 +270,7 @@ void print_list_entry(int i, int counter)
 	int position = 0;
 	int cutoff = 25;
 	char* delimiter = malloc(10 * sizeof(char));
+	delimiter = "/";
 #ifdef _WIN32
 	delimiter = "\\";
 #endif
@@ -296,8 +304,7 @@ void print_list_entry(int i, int counter)
 		printf("[ %d ]", counter);
 	}
 
-	if (strstr(STORED[i+1], "https:") != NULL ||
-		strstr(STORED[i+1], "http:") != NULL )
+	if (http_check(STORED[i+1]))
 	{
 		printf( C_CYAN"  WEB  ");
 	}
