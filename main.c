@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include "pxec.h"
 
-#define C_RED              "\x1b[31m"
-#define C_CYAN    "\x1b[36m"
-#define C_RESET            "\x1b[0m"
-#define C_GREEN            "\x1b[32m"
+#define C_RED    "\x1b[31m"
+#define C_CYAN   "\x1b[36m"
+#define C_RESET  "\x1b[0m"
+#define C_GREEN  "\x1b[32m"
 
 /* pxec
  * (C) 2023, Simon Lixenfeld
@@ -30,15 +30,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-// Loading File
-// Commands
-//
-//
-//
-//
-//
-//
 
 int MAX_WORDS = 2048;
 char VERSION[] = "0.00000000000000000000000000000000001";
@@ -96,7 +87,7 @@ void save_to_file()
 int http_check(char* text)
 {
 	return (strstr(text, "https:") != NULL ||
-		strstr(text, "http:") != NULL);
+			strstr(text, "http:") != NULL);
 }
 
 int number_check(char* in)
@@ -134,7 +125,8 @@ void run_cmd(char* in, char* argstr)
 			sprintf(count_str, "%d", cmd_count);
 		}
 		if ( (i % 2 == 0 && strcmp(STORED[i+1],"") !=0) &&
-		( (strcmp(in,STORED[i]) == 0) || strcmp(count_str,in) == 0 ) )
+				( (strcmp(in,STORED[i]) == 0)
+				|| strcmp(count_str,in) == 0 ) )
 		{
 			cmd_found = 1;
 			printf(C_GREEN "-> %s"
@@ -220,8 +212,7 @@ void run_cmd(char* in, char* argstr)
 			{
 				type = 3;
 			}
-
-			//	printf("PATH: %s\n", path);
+			///////////////////////////////////////////////////////////
 			strcpy(cmd, "");
 
 #ifdef _WIN32
@@ -229,19 +220,18 @@ void run_cmd(char* in, char* argstr)
 			{
 				strcpy(cmd, "start \"\" ");
 
-			// Set missing beginning quotes around executable
-				if (STORED[i+1][0] != '\"') {
+				// Set missing beginning quotes around executable
+				if (STORED[i+1][0] != '\"')
 					strcat(cmd, "\"");
-				}
 			}
 #else
 #endif
-			strcat(cmd, STORED[i+1]); //executable
+			strcat(cmd, STORED[i+1]);
 			if (type == 2)
 			{
-				chdir(path); // running dir
+				chdir(path); // set running dir
 #ifdef _WIN32
-			// Set missing end quotes around executable
+				// Set missing end quotes around executable
 				if (STORED[i+1][strlen(STORED[i+1])-1] != '\"')
 					strcat(cmd, "\" ");
 #endif
@@ -349,7 +339,8 @@ void list(char* filter)
 		if (i % 2 == 0 && strcmp(STORED[i],"") != 0)
 		{
 			counter++;
-			if (strlen(filter) == 0 || (strstr(STORED[i], filter) != NULL))
+			if (strlen(filter) == 0 
+			|| (strstr(STORED[i], filter) != NULL))
 			{
 				print_list_entry(i, counter);
 			}
@@ -556,21 +547,21 @@ int main(int argc, char **argv)
 			list(in);	
 		}
 		else if ( strcmp(in,"exit") == 0
-			||strcmp(in,"quit") == 0
-			||strcmp(in,"q") == 0
+				||strcmp(in,"quit") == 0
+				||strcmp(in,"q") == 0
 			)
 			break;
 		else if ( strcmp(in,"help") == 0)
 			printf(
-			"add   --> add new alias\n"
-			 "rm    --> remove alias\n"
-			 "ls    --> list all aliases\n"
-			 "find  --> find alias\n"
-			 "clear --> clear screen\n"
-			 "help  --> display this message\n"
-			 "exit  --> exit\n"
-			 "q     --> exit\n"
-			 "quit  --> exit\n");
+					"add   --> add new alias\n"
+					"rm    --> remove alias\n"
+					"ls    --> list all aliases\n"
+					"find  --> find alias\n"
+					"clear --> clear screen\n"
+					"help  --> display this message\n"
+					"exit  --> exit\n"
+					"q     --> exit\n"
+					"quit  --> exit\n");
 		else if ( strcmp(in, "clear") == 0)
 			clear_screen();
 		else if (strcmp(in, "edit") == 0)
@@ -588,7 +579,7 @@ int main(int argc, char **argv)
 		if(run_arg == 1)
 			break;
 	}
-	///////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
 	free(MAPFILE);
 	free(cmdstr);
 	free(argstr);
