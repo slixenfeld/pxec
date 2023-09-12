@@ -80,7 +80,9 @@ void save_to_file()
 			free(temp);
 		}
 	}
-	fprintf(fp,outstr);
+	if (strcmp(outstr, "") != 0)
+		fprintf(fp,outstr);
+
 	fclose(fp);
 	free(outstr);
 }
@@ -381,6 +383,7 @@ void edit(char* edit_choice)
 		char* entry = malloc(1024 * sizeof(char));
 		strcpy(STORED[entry_id+1], entry);
 		printf(C_YELLOW "%s will run" C_RESET "-> ", STORED[entry_id]);
+
 		getline(&entry, &MAXBUFFER, stdin);
 		remove_newline(entry);
 
