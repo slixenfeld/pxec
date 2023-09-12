@@ -8,6 +8,7 @@
 #define C_CYAN   "\x1b[36m"
 #define C_RESET  "\x1b[0m"
 #define C_GREEN  "\x1b[32m"
+#define C_YELLOW "\x1b[33m"
 
 /* pxec
  * (C) 2023, Simon Lixenfeld
@@ -32,7 +33,7 @@
  */
 
 int MAX_WORDS = 2048;
-char VERSION[] = "0.00000000000000000000000000000000001";
+char VERSION[] = "0.1";
 char STORED[2048][1000];
 int MAXBUFFER = 1000;
 char* MAPFILE;
@@ -110,148 +111,129 @@ int number_check(char* in)
 
 void run_cmd(char* in, char* argstr)
 {
-	int cmd_found = 0;
-	int cmd_count = 0;
-	for (int i = 0 ; i < MAX_WORDS ; i++)
+
+	int i = check_cmd_exists(in);
+	if (i == -1)
 	{
-		char count_str[5];
-
-		if (i % 2 == 0)
-		{
-			cmd_count++;
-		}
-		if (!number_check(in))
-		{
-			sprintf(count_str, "%d", cmd_count);
-		}
-		if ( (i % 2 == 0 && strcmp(STORED[i+1],"") !=0) &&
-				( (strcmp(in,STORED[i]) == 0)
-				|| strcmp(count_str,in) == 0 ) )
-		{
-			cmd_found = 1;
-			printf(C_GREEN "-> %s"
-					C_RESET "\n", in);
-
-			char * cmd = malloc(1000 * sizeof(char));
-			int position = 0;
-			int cutoff = 25;
-			char* delimiter = malloc(10 * sizeof(char)); 
-
-			delimiter = "/";
-#ifdef _WIN32
-			delimiter = "\\";
-#endif
-			char *ptr;
-			int delims = 0;
-			int cur_delim = 0;
-			char* path = malloc(0x40 * sizeof(char*));
-
-			char* s = malloc(0x40 * sizeof(char*));
-			strcpy(s, STORED[i+1]);
-			ptr = strtok(s, delimiter);
-			while(ptr != NULL)
-			{
-				delims++;
-				ptr = strtok(NULL, delimiter);
-			}
-
-			if (delims > 1)
-			{
-				char* s = malloc(0x40 * sizeof(char*));
-				char *ptr2;
-				strcpy(path, "");
-				strcpy(s, STORED[i+1]);
-				ptr2 = strtok(s, delimiter);
-
-#ifdef _WIN32
-
-#else
-				if ( STORED[i+1][0] == '/') 
-				{
-					strcat(path,delimiter);
-				}
-#endif
-				strcat(path, ptr2);
-				strcat(path,delimiter);
-				while(ptr2 != NULL)
-				{
-					cur_delim++;
-					ptr2 = strtok(NULL, delimiter);
-					strcat(path, ptr2);
-#ifdef _WIN32
-					strcat(path,delimiter);
-					if ( cur_delim == delims-2)
-					{
-						break;
-					}
-#else
-					strcat(path,delimiter);
-					if ( cur_delim == delims-2)
-					{
-						break;
-					}
-#endif
-					//printf("%s\n",path);
-					if (cur_delim == delims-1) break;
-				} 
-			}
-
-			free(s);
-
-			int type = 1; // 1 = WEB, 2 = APP, 3 = CMD
-
-			if (http_check(STORED[i+1]))
-			{
-				type = 1;
-			}
-			else if ( delims > 1)
-			{
-				type = 2;
-			}
-			else
-			{
-				type = 3;
-			}
-			///////////////////////////////////////////////////////////
-			strcpy(cmd, "");
-
-#ifdef _WIN32
-			if (type == 2)
-			{
-				strcpy(cmd, "start \"\" ");
-
-				// Set missing beginning quotes around executable
-				if (STORED[i+1][0] != '\"')
-					strcat(cmd, "\"");
-			}
-#else
-#endif
-			strcat(cmd, STORED[i+1]);
-			if (type == 2)
-			{
-				chdir(path); // set running dir
-#ifdef _WIN32
-				// Set missing end quotes around executable
-				if (STORED[i+1][strlen(STORED[i+1])-1] != '\"')
-					strcat(cmd, "\" ");
-#endif
-			}
-
-
-			strcat(cmd, argstr);
-
-			beep(440,10);
-			int status = system( cmd );
-			beep(500,10);
-			free(cmd);
-		}
-	}
-	if (cmd_found == 0) {
 		beep(200,20);
-		printf(C_RED "could not find \'%s\' \n"
-				C_RESET, in);
+		printf(C_RED"could not find \'%s\'\n"C_RESET, in);
+		return;
+	}
+	printf(C_GREEN "-> %s"
+			C_RESET "\n", in);
+
+	char * cmd = malloc(1000 * sizeof(char));
+	int position = 0;
+	int cutoff = 25;
+	char* delimiter = malloc(10 * sizeof(char)); 
+
+	delimiter = "/";
+#ifdef _WIN32
+	delimiter = "\\";
+#endif
+	char *ptr;
+	int delims = 0;
+	int cur_delim = 0;
+	char* path = malloc(0x40 * sizeof(char*));
+
+	char* s = malloc(0x40 * sizeof(char*));
+	strcpy(s, STORED[i+1]);
+	ptr = strtok(s, delimiter);
+	while(ptr != NULL)
+	{
+		delims++;
+		ptr = strtok(NULL, delimiter);
 	}
 
+	if (delims > 1)
+	{
+		char* s = malloc(0x40 * sizeof(char*));
+		char *ptr2;
+		strcpy(path, "");
+		strcpy(s, STORED[i+1]);
+		ptr2 = strtok(s, delimiter);
+
+#ifdef _WIN32
+
+#else
+		if ( STORED[i+1][0] == '/') 
+		{
+			strcat(path,delimiter);
+		}
+#endif
+		strcat(path, ptr2);
+		strcat(path,delimiter);
+		while(ptr2 != NULL)
+		{
+			cur_delim++;
+			ptr2 = strtok(NULL, delimiter);
+			strcat(path, ptr2);
+#ifdef _WIN32
+			strcat(path,delimiter);
+			if ( cur_delim == delims-2)
+			{
+				break;
+			}
+#else
+			strcat(path,delimiter);
+			if ( cur_delim == delims-2)
+			{
+				break;
+			}
+#endif
+			//printf("%s\n",path);
+			if (cur_delim == delims-1) break;
+		} 
+	}
+
+	free(s);
+
+	int type = 1; // 1 = WEB, 2 = APP, 3 = CMD
+
+	if (http_check(STORED[i+1]))
+	{
+		type = 1;
+	}
+	else if ( delims > 1)
+	{
+		type = 2;
+	}
+	else
+	{
+		type = 3;
+	}
+	///////////////////////////////////////////////////////////
+	strcpy(cmd, "");
+
+#ifdef _WIN32
+	if (type == 2)
+	{
+		strcpy(cmd, "start \"\" ");
+
+		// Set missing beginning quotes around executable
+		if (STORED[i+1][0] != '\"')
+			strcat(cmd, "\"");
+	}
+#else
+#endif
+	strcat(cmd, STORED[i+1]);
+	if (type == 2)
+	{
+		chdir(path); // set running dir
+#ifdef _WIN32
+		// Set missing end quotes around executable
+		if (STORED[i+1][strlen(STORED[i+1])-1] != '\"')
+			strcat(cmd, "\" ");
+#endif
+	}
+
+
+	strcat(cmd, argstr);
+
+	beep(440,10);
+	int status = system( cmd );
+	beep(500,10);
+	free(cmd);
 }
 
 
@@ -340,7 +322,7 @@ void list(char* filter)
 		{
 			counter++;
 			if (strlen(filter) == 0 
-			|| (strstr(STORED[i], filter) != NULL))
+					|| (strstr(STORED[i], filter) != NULL))
 			{
 				print_list_entry(i, counter);
 			}
@@ -349,17 +331,73 @@ void list(char* filter)
 	}
 }
 
-void edit()
+int check_cmd_exists(char* cmd)
 {
-	printf("editing save file..\n");
-	char * cmd = malloc(1024 * sizeof(char));
+	int ret_idx = -1;
+	int cmd_count = 0;
+	for (int i = 0 ; i < MAX_WORDS ; i++)
+	{
+		char count_str[5];
+		if (i % 2 == 0)
+		{
+			cmd_count++;
+		}
+		if (!number_check(cmd))
+		{
+			sprintf(count_str, "%d", cmd_count);
+		}
+		if ( (i % 2 == 0 && strcmp(STORED[i+1],"") !=0) &&
+				( (strcmp(cmd,STORED[i]) == 0)
+				  || strcmp(count_str,cmd) == 0 ) )
+		{
+			ret_idx = i;
+		}
+	}
+	return ret_idx;
+}
 
-	strcpy(cmd,"vim ");
-	strcat(cmd, MAPFILE);
+void edit(char* edit_choice)
+{
+	if (strcmp(edit_choice, "*") == 0)
+	{
+		char * cmd = malloc(2048);
+		printf("editing save file..\n");
+		strcpy(cmd,"vim ");
+		strcat(cmd, MAPFILE);
 
-	int status = system( cmd );
+		int status = system( cmd );
 
-	free(cmd);
+		free(cmd);
+	}
+	else
+	{
+		int entry_id = check_cmd_exists(edit_choice);
+		if (entry_id == -1)
+		{
+			printf(C_YELLOW"could not find \'%s\'\n", edit_choice);
+			return;
+		}
+
+		char* entry = malloc(1024 * sizeof(char));
+		strcpy(STORED[entry_id+1], entry);
+		printf(C_YELLOW "%s will run" C_RESET "-> ", STORED[entry_id]);
+		getline(&entry, &MAXBUFFER, stdin);
+		remove_newline(entry);
+
+		char *path = malloc(MAXBUFFER * sizeof(char));
+		strcpy(path, "");
+		strcat(path, entry);
+		strcpy(STORED[entry_id+1], path);
+		free(path);
+
+		// Save Entry+Path
+		save_to_file();
+
+		printf(C_YELLOW "edited %s -> %s"
+				C_RESET "\n",
+				STORED[entry_id],
+				STORED[entry_id+1]);
+	}
 }
 void add_entry(char* in, int* entry_count)
 {
@@ -392,33 +430,19 @@ void add_entry(char* in, int* entry_count)
 void remove_entry(char* in)
 {
 	printf(C_RED "removing " C_RESET " -> ");
-
 	getline(&in, &MAXBUFFER, stdin);
 	remove_newline(in);
 
-	char * key = malloc(1000*sizeof(char));
-	char * val = malloc(1000*sizeof(char));
-
-	int found = 0;
-	// remove entry [key, value]
-	for (int i = 0; i < MAX_WORDS ; i++)
+	int i = check_cmd_exists(in);
+	if (i == -1)
 	{
-		if ( i % 2 == 0 && strcmp(STORED[i],in) == 0)
-		{
-			strcpy(key,STORED[i]);
-			strcpy(val,STORED[i+1]);
-			strcpy(STORED[i], "");
-			strcpy(STORED[i+1], "");
-			found = 1;
-		}
+		beep(200,20);
+		printf(C_RED"could not find \'%s\'\n"C_RESET, in);
+		return;
 	}
-	save_to_file();
-	printf((found == 1) ?  C_RED "removed %s\n"C_RESET 
-			: C_RED "could not find %s\n"
-			C_RESET , in);
 
-	free(key);
-	free(val);
+	save_to_file();
+	printf(C_RED "removed %s\n"C_RESET, in);
 }
 
 void beep(int freq, int len)
@@ -566,8 +590,15 @@ int main(int argc, char **argv)
 			clear_screen();
 		else if (strcmp(in, "edit") == 0)
 		{
-			edit();
-			break;
+			printf( C_YELLOW"edit <*> or <name>"C_RESET" -> ");
+			char* edit_choice = malloc(0xFF);
+			getline(&edit_choice, &MAXBUFFER, stdin);
+			remove_newline(edit_choice);
+			edit(edit_choice);
+
+			free(edit_choice);
+
+			if (strcmp(edit_choice, "*") == 0) break;
 		}
 		else
 		{
