@@ -447,6 +447,9 @@ void remove_entry(char* in)
 		return;
 	}
 
+	strcpy(STORED[i], "");
+	strcpy(STORED[i+1], "");
+
 	save_to_file();
 	printf(C_RED "removed %s\n"C_RESET, in);
 }
@@ -564,7 +567,7 @@ int main(int argc, char **argv)
 			add_entry(in, &entry_count);
 		else if (strcmp(in, "rm") == 0) // in, MAPFILE
 			remove_entry(in);
-		else if ( strcmp(in,"ls") == 0)
+		else if ( strcmp(in,"ls") == 0 || strcmp(in,"list") == 0)
 			list("");
 		else if ( strcmp(in,"find") == 0)
 		{
