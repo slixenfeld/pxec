@@ -407,13 +407,13 @@ void add_entry(char* in, int* entry_count)
 	printf(C_GREEN "adding" C_RESET " -> ");
 	getline(&in, &MAXBUFFER, stdin);
 	remove_newline(in);
-	if (strcmp(entry, "") == 0) return;
+	if (strcmp(in, "") == 0) return;
 
 	strcpy(STORED[*entry_count], in);
 	printf(C_GREEN "%s will run" C_RESET "-> ", in);
 	getline(&in, &MAXBUFFER, stdin);
 	remove_newline(in);
-	if (strcmp(entry, "") == 0) return;
+	if (strcmp(in, "") == 0) return;
 
 
 	char *path = malloc(MAXBUFFER * sizeof(char));
