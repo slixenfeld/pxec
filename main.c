@@ -375,7 +375,7 @@ void edit(char* edit_choice)
 		int entry_id = check_cmd_exists(edit_choice);
 		if (entry_id == -1)
 		{
-			printf(C_YELLOW"could not find \'%s\'\n", edit_choice);
+			printf(C_YELLOW"could not find \'%s\'\n"C_RESET, edit_choice);
 			return;
 		}
 
