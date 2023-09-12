@@ -55,6 +55,14 @@ void remove_newline(char* line)
 	}
 }
 
+
+void read_input(char* in)
+{
+	getline(&in, &MAXBUFFER, stdin);
+	remove_newline(in);
+}
+
+
 void clear_screen()
 {
 	for(int i = 0 ; i < 300 ; i++)
@@ -81,7 +89,7 @@ void save_to_file()
 			free(temp);
 		}
 	}
-	fprintf(fp,outstr);
+	fprintf(fp,"%s",outstr);
 	fclose(fp);
 	free(outstr);
 }
@@ -308,9 +316,10 @@ void print_list_entry(int i, int counter)
 		printf(" ");
 	}
 	printf("  --->  ");
-	printf(STORED[i+1]);
+	printf("%s",STORED[i+1]);
 	printf(C_RESET);
 	printf("\n");
+	beep(170,10);
 }
 
 void list(char* filter)
@@ -381,10 +390,10 @@ void edit(char* edit_choice)
 
 		char* entry = malloc(1024 * sizeof(char));
 		strcpy(STORED[entry_id+1], entry);
-		printf(C_YELLOW "%s will run" C_RESET "-> ", STORED[entry_id]);
+		printf(C_YELLOW "%s will run" C_RESET "-> ",
+			STORED[entry_id]);
 
-		getline(&entry, &MAXBUFFER, stdin);
-		remove_newline(entry);
+		read_input(entry);
 		if (strcmp(entry, "") == 0) return;
 
 		char *path = malloc(MAXBUFFER * sizeof(char));
@@ -405,14 +414,12 @@ void edit(char* edit_choice)
 void add_entry(char* in, int* entry_count)
 {
 	printf(C_GREEN "adding" C_RESET " -> ");
-	getline(&in, &MAXBUFFER, stdin);
-	remove_newline(in);
+	read_input(in);
 	if (strcmp(in, "") == 0) return;
 
 	strcpy(STORED[*entry_count], in);
 	printf(C_GREEN "%s will run" C_RESET "-> ", in);
-	getline(&in, &MAXBUFFER, stdin);
-	remove_newline(in);
+	read_input(in);
 	if (strcmp(in, "") == 0) return;
 
 
@@ -436,8 +443,7 @@ void add_entry(char* in, int* entry_count)
 void remove_entry(char* in)
 {
 	printf(C_RED "removing " C_RESET " -> ");
-	getline(&in, &MAXBUFFER, stdin);
-	remove_newline(in);
+	read_input(in);
 
 	int i = check_cmd_exists(in);
 	if (i == -1)
@@ -555,8 +561,7 @@ int main(int argc, char **argv)
 		char *in = malloc(MAXBUFFER * sizeof(char));
 		if (run_arg == 0)
 		{
-			getline(&in, &MAXBUFFER, stdin);
-			remove_newline(in);
+			read_input(in);
 		}
 		else
 		{
@@ -572,8 +577,7 @@ int main(int argc, char **argv)
 		else if ( strcmp(in,"find") == 0)
 		{
 			printf( C_CYAN"find"C_RESET" -> ");
-			getline(&in, &MAXBUFFER, stdin);
-			remove_newline(in);
+			read_input(in);
 			list(in);	
 		}
 		else if ( strcmp(in,"exit") == 0
@@ -598,8 +602,7 @@ int main(int argc, char **argv)
 		{
 			printf( C_YELLOW"edit <*> or <name>"C_RESET" -> ");
 			char* edit_choice = malloc(0xFF);
-			getline(&edit_choice, &MAXBUFFER, stdin);
-			remove_newline(edit_choice);
+			read_input(edit_choice);
 			if (strcmp(edit_choice, "") != 0)
 				edit(edit_choice);
 
