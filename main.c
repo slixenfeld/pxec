@@ -203,7 +203,6 @@ void run_cmd(char* in, char* argstr)
 	{
 		type = 3;
 	}
-	///////////////////////////////////////////////////////////
 	strcpy(cmd, "");
 
 #ifdef _WIN32
@@ -375,7 +374,8 @@ void edit(char* edit_choice)
 		int entry_id = check_cmd_exists(edit_choice);
 		if (entry_id == -1)
 		{
-			printf(C_YELLOW"could not find \'%s\'\n"C_RESET, edit_choice);
+			printf(C_YELLOW"could not find \'%s\'\n"
+				C_RESET, edit_choice);
 			return;
 		}
 
@@ -463,7 +463,6 @@ void beep(int freq, int len)
 	free(beepstr);
 #endif
 }
-//////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
 	beep(200, 10);
@@ -506,7 +505,6 @@ int main(int argc, char **argv)
 		}
 	}
 
-	///////////////////////////////////////////////////////////////////////////
 	// Load File
 
 #ifdef _WIN32
@@ -548,7 +546,6 @@ int main(int argc, char **argv)
 
 	if (line) free(line);
 
-	///////////////////////////////////////////////////////////////////////////
 	/// Commands
 	while(1)
 	{
@@ -616,7 +613,6 @@ int main(int argc, char **argv)
 		if(run_arg == 1)
 			break;
 	}
-	///////////////////////////////////////////////////////////////////////////
 	free(MAPFILE);
 	free(cmdstr);
 	free(argstr);
