@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "pxec.h"
 
 #define C_RED    "\x1b[31m"
@@ -80,9 +81,7 @@ void save_to_file()
 			free(temp);
 		}
 	}
-	if (strcmp(outstr, "") != 0)
-		fprintf(fp,outstr);
-
+	fprintf(fp,outstr);
 	fclose(fp);
 	free(outstr);
 }
@@ -386,6 +385,7 @@ void edit(char* edit_choice)
 
 		getline(&entry, &MAXBUFFER, stdin);
 		remove_newline(entry);
+		if (strcmp(entry, "") == 0) return;
 
 		char *path = malloc(MAXBUFFER * sizeof(char));
 		strcpy(path, "");
@@ -407,11 +407,14 @@ void add_entry(char* in, int* entry_count)
 	printf(C_GREEN "adding" C_RESET " -> ");
 	getline(&in, &MAXBUFFER, stdin);
 	remove_newline(in);
+	if (strcmp(entry, "") == 0) return;
 
 	strcpy(STORED[*entry_count], in);
 	printf(C_GREEN "%s will run" C_RESET "-> ", in);
 	getline(&in, &MAXBUFFER, stdin);
 	remove_newline(in);
+	if (strcmp(entry, "") == 0) return;
+
 
 	char *path = malloc(MAXBUFFER * sizeof(char));
 	strcpy(path, "");
@@ -597,10 +600,10 @@ int main(int argc, char **argv)
 			char* edit_choice = malloc(0xFF);
 			getline(&edit_choice, &MAXBUFFER, stdin);
 			remove_newline(edit_choice);
-			edit(edit_choice);
+			if (strcmp(edit_choice, "") != 0)
+				edit(edit_choice);
 
 			free(edit_choice);
-
 			if (strcmp(edit_choice, "*") == 0) break;
 		}
 		else
