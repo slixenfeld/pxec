@@ -39,6 +39,20 @@ char STORED[2048][1000];
 int MAXBUFFER = 1000;
 char* MAPFILE;
 
+void rot18(char *c)
+{
+    while (*c)
+    {
+        if (*c >= 'A' && *c <= 'Z')
+            *c = ('A' + (*c - 'A' + 13) % 26);
+        else if (*c >= 'a' && *c <= 'z')
+            *c = ('a' + (*c - 'a' + 13) % 26);
+        else if (*c >= '0' && *c <= '9')
+            *c = ('0' + (*c - '0' + 5) % 10);
+        c++;
+    }
+}
+
 void print_version()
 {
 	printf("%s", VERSION);
@@ -89,6 +103,8 @@ void save_to_file()
 			free(temp);
 		}
 	}
+	
+	rot18(outstr);
 	fprintf(fp,"%s",outstr);
 	fclose(fp);
 	free(outstr);
@@ -548,6 +564,7 @@ int main(int argc, char **argv)
 	while ((read = getline(&line, &len, fp)) != -1)
 	{
 		remove_newline(line);
+		rot18(line);
 		strcpy(STORED[entry_count],line);
 		entry_count++;
 	}
