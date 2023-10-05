@@ -34,10 +34,11 @@
  */
 
 int MAX_WORDS = 2048;
-char VERSION[] = "0.1";
+char VERSION[] = "0.2";
 char STORED[2048][1000];
 int MAXBUFFER = 1000;
 char* MAPFILE;
+char* DEFAULT_BROWSER;
 
 void rot18(char *c)
 {
@@ -112,8 +113,12 @@ void save_to_file()
 
 int http_check(char* text)
 {
-	return (strstr(text, "https:") != NULL ||
-			strstr(text, "http:") != NULL);
+	char* check_str = malloc(6 * sizeof(char*));
+	strcpy(check_str, "");
+	strncat(check_str, text, 4);
+	int retval = (strcmp(check_str, "http") == 0 );
+	free(check_str);
+	return retval;
 }
 
 int number_check(char* in)
@@ -133,6 +138,12 @@ int number_check(char* in)
 	}
 	return 0;
 }
+
+enum RUN_TYPE {
+	WEB = 1,
+	APP = 2,
+	CMD = 3
+};
 
 void run_cmd(char* in, char* argstr)
 {
@@ -213,24 +224,24 @@ void run_cmd(char* in, char* argstr)
 
 	free(s);
 
-	int type = 1; // 1 = WEB, 2 = APP, 3 = CMD
+	int type = 0; // 1 = WEB, 2 = APP, 3 = CMD
 
 	if (http_check(STORED[i+1]))
 	{
-		type = 1;
+		type = WEB;
 	}
 	else if ( delims > 1)
 	{
-		type = 2;
+		type = APP;
 	}
 	else
 	{
-		type = 3;
+		type = WEB;
 	}
 	strcpy(cmd, "");
 
 #ifdef _WIN32
-	if (type == 2)
+	if (type == APP)
 	{
 		strcpy(cmd, "start \"\" ");
 
@@ -239,9 +250,18 @@ void run_cmd(char* in, char* argstr)
 			strcat(cmd, "\"");
 	}
 #else
+
 #endif
+
+	if (type == WEB)
+	{
+		strcat(cmd, DEFAULT_BROWSER);
+		strcat(cmd, " ");
+	}
+
 	strcat(cmd, STORED[i+1]);
-	if (type == 2)
+
+	if (type == APP)
 	{
 		chdir(path); // set running dir
 #ifdef _WIN32
@@ -253,7 +273,9 @@ void run_cmd(char* in, char* argstr)
 
 
 	strcat(cmd, argstr);
-
+	if (type == WEB) {
+		strcat(cmd, " \"");
+	}
 	beep(440,10);
 	int status = system( cmd );
 	beep(500,10);
@@ -403,14 +425,21 @@ void edit(char* edit_choice)
 				C_RESET, edit_choice);
 			return;
 		}
+		printf(C_YELLOW "%s => %s\n" C_RESET,
+			STORED[entry_id], STORED[entry_id+1]);
 
 		char* entry = malloc(1024 * sizeof(char));
-		strcpy(STORED[entry_id+1], entry);
+
 		printf(C_YELLOW "%s will run" C_RESET "-> ",
 			STORED[entry_id]);
 
 		read_input(entry);
-		if (strcmp(entry, "") == 0) return;
+		if (strcmp(entry, "") == 0) {
+		printf(C_YELLOW "nothing changed\n" C_RESET);
+			return;
+		}
+
+		strcpy(STORED[entry_id+1], entry);
 
 		char *path = malloc(MAXBUFFER * sizeof(char));
 		strcpy(path, "");
@@ -478,6 +507,7 @@ void remove_entry(char* in)
 
 void beep(int freq, int len)
 {
+	return;
 #ifdef _WIN32
 
 #else
@@ -488,6 +518,20 @@ void beep(int freq, int len)
 	free(beepstr);
 #endif
 }
+
+int check_default_browser_set() {
+	int entry_id = check_cmd_exists("default-browser");
+	if (entry_id == -1)
+	{
+		printf(C_YELLOW"could not find \'%s\'\n"
+			C_RESET, "default-browser");
+		return -1;
+	} else {
+		DEFAULT_BROWSER = STORED[entry_id+1];
+		return 0;
+	}
+}
+
 int main(int argc, char **argv)
 {
 	beep(200, 10);
@@ -572,6 +616,9 @@ int main(int argc, char **argv)
 
 	if (line) free(line);
 
+	// default browser check
+	check_default_browser_set();
+
 	/// Commands
 	while(1)
 	{
@@ -636,6 +683,7 @@ int main(int argc, char **argv)
 		if(run_arg == 1)
 			break;
 	}
+	free(DEFAULT_BROWSER);
 	free(MAPFILE);
 	free(cmdstr);
 	free(argstr);
