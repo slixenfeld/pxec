@@ -236,7 +236,7 @@ void run_cmd(char* in, char* argstr)
 	}
 	else
 	{
-		type = WEB;
+		type = CMD;
 	}
 	strcpy(cmd, "");
 
