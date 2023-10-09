@@ -683,7 +683,6 @@ int main(int argc, char **argv)
 		if(run_arg == 1)
 			break;
 	}
-	free(DEFAULT_BROWSER);
 	free(MAPFILE);
 	free(cmdstr);
 	free(argstr);
