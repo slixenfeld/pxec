@@ -274,7 +274,7 @@ void run_cmd(char* in, char* argstr)
 
 	strcat(cmd, argstr);
 	if (type == WEB) {
-		strcat(cmd, " \"");
+	//	strcat(cmd, " \"");
 	}
 	beep(440,10);
 	int status = system( cmd );
