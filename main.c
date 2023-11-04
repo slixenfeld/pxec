@@ -121,6 +121,14 @@ int http_check(char* text)
 	return retval;
 }
 
+int windows_path_check(char* text) {
+	if  (strlen(text) < 2) {
+		return 0;
+	}
+	if (text[1] == ':') return 1;
+	return 0;
+}
+
 int number_check(char* in)
 {
 	char* numbers = "1234567890";
@@ -230,7 +238,7 @@ void run_cmd(char* in, char* argstr)
 	{
 		type = WEB;
 	}
-	else if ( delims > 1)
+	else if ( delims > 1 && windows_path_check(STORED[i+1]))
 	{
 		type = APP;
 	}
