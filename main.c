@@ -370,15 +370,18 @@ void list(char* filter)
 	int counter = 0;
 	for (int i = 0 ; i < MAX_WORDS ; i++)
 	{
-		if (i % 2 == 0 && strcmp(STORED[i],"") != 0)
+		if (i % 2 == 0)
 		{
-			counter++;
-			if (strlen(filter) == 0 
-					|| (strstr(STORED[i], filter) != NULL))
+			counter++; // count removed entries for correct indexing
+			if (strcmp(STORED[i],"") != 0)
 			{
-				print_list_entry(i, counter);
+				if (strlen(filter) == 0 
+				|| (strstr(STORED[i], filter) != NULL))
+				{
+					print_list_entry(i, counter);
+				}
+				printf(C_RESET);	
 			}
-			printf(C_RESET);
 		}
 	}
 }
