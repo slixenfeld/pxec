@@ -42,16 +42,16 @@ char* DEFAULT_BROWSER;
 
 void rot18(char *c)
 {
-    while (*c)
-    {
-        if (*c >= 'A' && *c <= 'Z')
-            *c = ('A' + (*c - 'A' + 13) % 26);
-        else if (*c >= 'a' && *c <= 'z')
-            *c = ('a' + (*c - 'a' + 13) % 26);
-        else if (*c >= '0' && *c <= '9')
-            *c = ('0' + (*c - '0' + 5) % 10);
-        c++;
-    }
+	while (*c)
+	{
+		if (*c >= 'A' && *c <= 'Z')
+			*c = ('A' + (*c - 'A' + 13) % 26);
+		else if (*c >= 'a' && *c <= 'z')
+			*c = ('a' + (*c - 'a' + 13) % 26);
+		else if (*c >= '0' && *c <= '9')
+			*c = ('0' + (*c - '0' + 5) % 10);
+		c++;
+	}
 }
 
 void print_version()
@@ -104,7 +104,7 @@ void save_to_file()
 			free(temp);
 		}
 	}
-	
+
 	rot18(outstr);
 	fprintf(fp,"%s",outstr);
 	fclose(fp);
@@ -282,7 +282,7 @@ void run_cmd(char* in, char* argstr)
 
 	strcat(cmd, argstr);
 	if (type == WEB) {
-	//	strcat(cmd, " \"");
+		//	strcat(cmd, " \"");
 	}
 	beep(440,10);
 	int status = system( cmd );
@@ -313,9 +313,6 @@ void print_list_entry(int i, int counter)
 		delims++;
 		ptr = strtok(NULL, delimiter);
 	}
-
-
-
 
 	if (counter<10)
 	{
@@ -430,20 +427,20 @@ void edit(char* edit_choice)
 		if (entry_id == -1)
 		{
 			printf(C_YELLOW"could not find \'%s\'\n"
-				C_RESET, edit_choice);
+					C_RESET, edit_choice);
 			return;
 		}
 		printf(C_YELLOW "%s => %s\n" C_RESET,
-			STORED[entry_id], STORED[entry_id+1]);
+				STORED[entry_id], STORED[entry_id+1]);
 
 		char* entry = malloc(1024 * sizeof(char));
 
 		printf(C_YELLOW "%s will run" C_RESET "-> ",
-			STORED[entry_id]);
+				STORED[entry_id]);
 
 		read_input(entry);
 		if (strcmp(entry, "") == 0) {
-		printf(C_YELLOW "nothing changed\n" C_RESET);
+			printf(C_YELLOW "nothing changed\n" C_RESET);
 			return;
 		}
 
@@ -479,17 +476,17 @@ void add_entry(char* in, int* entry_count)
 	char *path = malloc(MAXBUFFER * sizeof(char));
 	strcpy(path, "");
 	strcat(path, in);
-	strcpy(STORED[*entry_count+1], path);
+	strcpy(STORED[*entry_count + 1], path);
 	free(path);
 
 	// Save Entry+Path
-	*entry_count+=2;
+	*entry_count += 2;
 	save_to_file();
 
 	printf(C_GREEN "added %s -> %s"
 			C_RESET "\n",
-			STORED[*entry_count-2],
-			STORED[*entry_count-1]);
+			STORED[*entry_count - 2],
+			STORED[*entry_count - 1]);
 
 }
 
@@ -532,7 +529,7 @@ int check_default_browser_set() {
 	if (entry_id == -1)
 	{
 		printf(C_YELLOW"could not find \'%s\'\n"
-			C_RESET, "default-browser");
+				C_RESET, "default-browser");
 		return -1;
 	} else {
 		DEFAULT_BROWSER = STORED[entry_id+1];
@@ -655,7 +652,7 @@ int main(int argc, char **argv)
 		else if ( strcmp(in,"exit") == 0
 				||strcmp(in,"quit") == 0
 				||strcmp(in,"q") == 0
-			)
+				)
 			break;
 		else if ( strcmp(in,"help") == 0)
 			printf(
